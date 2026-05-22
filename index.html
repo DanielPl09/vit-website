@@ -795,6 +795,180 @@
       margin-top: 8px;
       transition: color 0.6s;
     }
+
+    /* ════════════════════════════════════════════════════
+       MOBILE RESPONSIVE  (≤ 768px)
+    ════════════════════════════════════════════════════ */
+    @media (max-width: 768px) {
+
+      /* ─── SECTION 1 — HERO ─────────────────────────── */
+      .outer-box {
+        height: auto;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        overflow: visible;
+        padding: 0;
+      }
+
+      /* Animated decorative layers stay inside the first 100vh
+         so they frame the carousel, not the headline below.       */
+      #neural-canvas,
+      .atmo,
+      .bubble-set {
+        height: 100vh;
+        bottom: auto;
+      }
+
+      /* Slightly smaller bubbles on mobile so they read as accents
+         around the carousel rather than crowding it.              */
+      .bubble { transform: scale(0.55); }
+
+      /* Carousel sits centered in the first viewport.
+         All the bubbles + neural canvas animate around it.        */
+      .inner-box {
+        position: absolute;
+        top: 50vh;
+        left: 50%;
+        right: auto;
+        transform: translate(-50%, -50%);
+        width: min(72%, 260px);
+        margin: 0;
+      }
+
+      /* Headline scrolls in below the carousel viewport. */
+      .headline-block {
+        position: relative;
+        bottom: auto;
+        left: auto;
+        margin: 100vh 0 0;
+        padding: 36px 24px 56px;
+        max-width: 100%;
+        text-align: center;
+        z-index: 12;
+      }
+
+      .eyebrow { justify-content: center; }
+      .sub     { margin: 14px auto 0; }
+      .cta-row { justify-content: center; }
+
+      /* ─── SECTION 2 — DASHBOARD ────────────────────── */
+      .dashboard-section {
+        padding: 44px 0 32px;
+        background-size: 28px 28px;
+      }
+
+      .dash-inner {
+        padding: 0 18px;
+        gap: 22px;
+      }
+
+      .dash-title {
+        font-size: 1.55rem;
+      }
+
+      .dash-tabs {
+        gap: 10px 28px;
+        flex-wrap: wrap;
+      }
+      .dash-tab {
+        font-size: 0.58rem;
+        letter-spacing: 0.18em;
+        padding: 8px 2px 14px;
+      }
+
+      /* Twin stage → 2×2 grid of selectable faces */
+      .twin-stage {
+        height: auto;
+        perspective: none;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 36px 14px;
+        padding: 8px 0 16px;
+      }
+
+      .twin {
+        position: relative;
+        bottom: auto;
+        left: auto;
+        width: 100%;
+        transform: none !important;
+        z-index: auto !important;
+      }
+
+      .twin-figure {
+        height: 190px;
+      }
+
+      .twin-pod {
+        position: relative;
+        bottom: auto;
+        left: auto;
+        transform: none;
+        width: 100%;
+        height: 32px;
+        margin-top: -4px;
+      }
+      .twin-pod-ring {
+        bottom: 8px;
+        width: 68%;
+        height: 14px;
+      }
+      .twin-pod::before {
+        height: 180px;
+        width: 60%;
+        bottom: 12px;
+      }
+      .twin-pod::after {
+        width: 88%;
+        height: 32px;
+        bottom: 0;
+      }
+
+      .twin-meta {
+        position: relative;
+        bottom: auto;
+        left: auto;
+        transform: none;
+        margin-top: 6px;
+        white-space: normal;
+      }
+      .twin-name   { font-size: 0.82rem; }
+      .twin-status { font-size: 0.5rem; letter-spacing: 0.16em; }
+
+      /* Detail card — single column, dividers go horizontal */
+      .dash-detail {
+        padding: 14px 16px 16px;
+        border-radius: 14px;
+      }
+
+      .detail-head {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+      }
+      .detail-name { font-size: 1.05rem; }
+      .detail-tag {
+        font-size: 0.52rem;
+        padding: 5px 11px;
+        align-self: flex-start;
+      }
+
+      .detail-grid {
+        grid-template-columns: 1fr;
+        gap: 0;
+      }
+      .detail-col {
+        padding: 12px 0;
+        min-height: auto;
+        border-left: none !important;
+      }
+      .detail-col + .detail-col {
+        border-top: 1px solid rgba(var(--hero), 0.12);
+      }
+      .detail-col:first-child { padding-top: 0; }
+      .detail-col:last-child  { padding-bottom: 0; }
+    }
   </style>
 </head>
 <body>
@@ -1319,7 +1493,16 @@ tick();
   }
 
   /* Make each twin clickable */
-  twins.forEach(t => t.addEventListener('click', () => showDetail(t.dataset.id)));
+  const isMobile = () => window.matchMedia('(max-width: 768px)').matches;
+  twins.forEach(t => t.addEventListener('click', () => {
+    showDetail(t.dataset.id);
+    if (isMobile()) {
+      /* Small delay so the fade-swap starts first */
+      setTimeout(() => {
+        detail.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }, 120);
+    }
+  }));
 
   /* Default open: Maya (the urgent one) */
   showDetail('0');
