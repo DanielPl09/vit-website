@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VIT</title>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html {
+      width: 100%;
+      background: #05070f;
+      scroll-behavior: smooth;
+    }
+    body {
+      width: 100%;
+      overflow-x: hidden;
+      overflow-y: auto;
+      background: #05070f;
+      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    }
+
+    /* ── OUTER BOX ──────────────────────────────────────── */
+    .outer-box {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    #neural-canvas {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    /* Colour atmosphere layer */
+    .atmo {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      transition: background 1.6s ease;
+    }
+    .atmo.t-green  { background: radial-gradient(ellipse 70% 65% at 58% 46%, rgba(70,180,110,.07)  0%, transparent 70%); }
+    .atmo.t-warm   { background: radial-gradient(ellipse 70% 65% at 58% 46%, rgba(210,120,75,.07)  0%, transparent 70%); }
+    .atmo.t-purple { background: radial-gradient(ellipse 70% 65% at 58% 46%, rgba(150,90,210,.07)  0%, transparent 70%); }
+    .atmo.t-blue   { background: radial-gradient(ellipse 70% 65% at 58% 46%, rgba(70,130,220,.07)  0%, transparent 70%); }
+
+    /* Subtle vignette */
+    .outer-box::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse 75% 75% at 55% 48%,
+        transparent 20%, rgba(5, 7, 15, 0.6) 100%);
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    /* ── FLOATING BUBBLES ───────────────────────────────── */
+    .bubble-set {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 1.4s ease;
+    }
+    .bubble-set.active { opacity: 1; pointer-events: auto; }
+
+    .bubble {
+      position: absolute;
+      border-radius: 50%;
+      animation: floatY var(--dur, 9s) ease-in-out infinite;
+      animation-delay: var(--dly, 0s);
+    }
+
+    .bubble-inner {
+      width: 100%; height: 100%;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(10, 18, 42, 0.5);
+      border: 1px solid var(--bdr);
+      box-shadow: 0 0 22px var(--glo), inset 0 0 14px var(--gli);
+      backdrop-filter: blur(8px);
+      overflow: hidden;
+      transition: border-color 0.4s, box-shadow 0.4s;
+    }
+
+    .bubble:hover .bubble-inner {
+      border-color: var(--bdr-h);
+      box-shadow: 0 0 36px var(--glo-h);
+    }
+
+    .bubble svg { width: 52%; height: 52%; }
+
+    @keyframes floatY {
+      0%, 100% { transform: translateY(0); }
+      50%       { transform: translateY(-20px); }
+    }
+
+    /* ── INNER BOX / CAROUSEL ───────────────────────────── */
+    .inner-box {
+      position: absolute;
+      right: 7vw;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 10;
+      width: min(340px, 36vw);
+      aspect-ratio: 3 / 4;
+      border-radius: 22px;
+      overflow: hidden;
+      transition: border-color 1.4s ease, box-shadow 1.4s ease;
+    }
+    .inner-box.theme-0 {
+      border: 1px solid rgba(100,200,140,.16);
+      box-shadow: 0 0 0 1px rgba(100,200,140,.05), 0 12px 80px rgba(60,170,100,.18), 0 0 120px rgba(60,170,100,.08);
+    }
+    .inner-box.theme-1 {
+      border: 1px solid rgba(220,140,100,.16);
+      box-shadow: 0 0 0 1px rgba(220,140,100,.05), 0 12px 80px rgba(200,110,65,.18), 0 0 120px rgba(200,110,65,.08);
+    }
+    .inner-box.theme-2 {
+      border: 1px solid rgba(170,120,220,.16);
+      box-shadow: 0 0 0 1px rgba(170,120,220,.05), 0 12px 80px rgba(150,90,200,.18), 0 0 120px rgba(150,90,200,.08);
+    }
+    .inner-box.theme-3 {
+      border: 1px solid rgba(100,160,240,.16);
+      box-shadow: 0 0 0 1px rgba(100,160,240,.05), 0 12px 80px rgba(70,130,220,.18), 0 0 120px rgba(70,130,220,.08);
+    }
+
+    .slide {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0;
+      transition: opacity 1.4s ease;
+    }
+    .slide.active { opacity: 1; }
+
+    /* Carousel indicator dots */
+    .carousel-dots {
+      position: absolute;
+      bottom: 14px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 8px;
+      z-index: 12;
+    }
+    .carousel-dots .dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.25);
+      transition: background 0.6s, transform 0.4s;
+      cursor: pointer;
+    }
+    .carousel-dots .dot.active {
+      background: rgba(255,255,255,0.85);
+      transform: scale(1.3);
+    }
+
+    /* ── HEADLINE — bottom left ─────────────────────────── */
+    .headline-block {
+      position: absolute;
+      bottom: 52px;
+      left: 56px;
+      z-index: 12;
+      max-width: 460px;
+    }
+
+    .eyebrow {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.6rem;
+      letter-spacing: 0.24em;
+      text-transform: uppercase;
+      color: rgba(160,200,180,.5);
+      margin-bottom: 18px;
+    }
+    .eyebrow::before {
+      content: '';
+      display: block;
+      width: 24px; height: 1px;
+      background: rgba(160,200,180,.35);
+      flex-shrink: 0;
+    }
+
+    .headline {
+      font-family: 'Georgia', 'Times New Roman', serif;
+      font-weight: 400;
+      line-height: 1.15;
+    }
+    .headline .l1 {
+      display: block;
+      font-size: clamp(1.55rem, 2.6vw, 2.1rem);
+      font-style: italic;
+      color: rgba(180,220,200,.55);
+    }
+    .headline .l2 {
+      display: block;
+      font-size: clamp(1.9rem, 3.2vw, 2.65rem);
+      color: rgba(220,235,228,.88);
+    }
+    .headline .l3 {
+      display: block;
+      font-size: clamp(1.9rem, 3.2vw, 2.65rem);
+    }
+    .headline .stress {
+      font-style: italic;
+      color: #fff;
+    }
+    .headline .dots {
+      font-style: normal;
+      color: rgba(200,225,215,.22);
+      letter-spacing: 0.12em;
+    }
+
+    .sub {
+      margin-top: 16px;
+      font-size: 0.78rem;
+      color: rgba(160,195,180,.35);
+      line-height: 1.75;
+      font-weight: 300;
+      max-width: 360px;
+    }
+
+    .cta-row {
+      margin-top: 28px;
+      display: flex;
+      align-items: center;
+      gap: 18px;
+    }
+
+    .btn-primary {
+      padding: 11px 24px;
+      border-radius: 50px;
+      border: 1px solid rgba(120,200,160,.28);
+      background: rgba(80,180,120,.08);
+      color: rgba(200,230,215,.82);
+      font-size: 0.68rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.5s;
+    }
+    .btn-primary:hover {
+      background: rgba(80,180,120,.18);
+      box-shadow: 0 0 22px rgba(80,180,120,.2);
+      border-color: rgba(120,200,160,.5);
+    }
+
+    .btn-ghost {
+      font-size: 0.65rem;
+      color: rgba(160,195,180,.32);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: color 0.3s;
+    }
+    .btn-ghost:hover { color: rgba(160,195,180,.6); }
+
+    /* ════════════════════════════════════════════════════
+       LANDING SECTION WRAPPER
+    ════════════════════════════════════════════════════ */
+    .landing-section {
+      position: relative;
+      width: 100%;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* ════════════════════════════════════════════════════
+       SECTION 2 — CLINIC VALUE
+    ════════════════════════════════════════════════════ */
+    .value-section {
+      position: relative;
+      width: 100%;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      /* dot-grid spacy background */
+      background-color: #05070f;
+      background-image:
+        radial-gradient(rgba(255,255,255,0.028) 1px, transparent 1px);
+      background-size: 38px 38px;
+    }
+
+    .val-canvas {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    /* warm ambient glow behind the video */
+    .val-glow {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      background: radial-gradient(ellipse 55% 55% at 50% 52%,
+        rgba(100, 145, 255, 0.055) 0%, transparent 70%);
+    }
+
+    .val-inner {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      max-width: 1200px;
+      padding: 80px 60px;
+      display: flex;
+      flex-direction: column;
+      gap: 64px;
+    }
+
+    /* ── Section header ─────────────────────────────── */
+    .val-header {
+      text-align: center;
+    }
+
+    .val-eyebrow {
+      font-size: 0.6rem;
+      letter-spacing: 0.24em;
+      text-transform: uppercase;
+      color: rgba(140, 180, 255, 0.45);
+      margin-bottom: 14px;
+    }
+
+    .val-title {
+      font-family: 'Georgia', 'Times New Roman', serif;
+      font-weight: 400;
+      font-size: clamp(2rem, 3.8vw, 3.2rem);
+      color: rgba(220, 235, 255, 0.88);
+      line-height: 1.18;
+    }
+    .val-title em {
+      font-style: italic;
+      color: #fff;
+    }
+
+    /* ── Stage layout ───────────────────────────────── */
+    .val-stage {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      gap: 40px;
+    }
+
+    /* Left card sits in its own grid cell */
+    .v-card--left {
+      justify-self: end;
+    }
+
+    /* Right cards column */
+    .v-cards-right {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      justify-self: start;
+    }
+
+    /* ── Value cards ────────────────────────────────── */
+    .v-card {
+      width: 270px;
+      padding: 28px 28px 24px;
+      background: rgba(10, 14, 34, 0.58);
+      border: 1px solid rgba(140, 180, 255, 0.1);
+      border-radius: 16px;
+      backdrop-filter: blur(14px);
+      box-shadow:
+        0 0 0 1px rgba(140, 180, 255, 0.04),
+        0 8px 40px rgba(80, 120, 255, 0.08),
+        inset 0 0 20px rgba(80, 120, 255, 0.03);
+      transition: border-color 0.4s, box-shadow 0.4s;
+      color: rgba(140, 180, 255, 0.8);
+    }
+
+    .v-card:hover {
+      border-color: rgba(140, 180, 255, 0.22);
+      box-shadow:
+        0 0 0 1px rgba(140, 180, 255, 0.08),
+        0 12px 60px rgba(80, 120, 255, 0.14);
+    }
+
+    .v-card-icon {
+      width: 40px; height: 40px;
+      margin-bottom: 18px;
+    }
+    .v-card-icon svg {
+      width: 100%; height: 100%;
+    }
+
+    .v-card-title {
+      font-family: 'Georgia', serif;
+      font-weight: 400;
+      font-size: 1.05rem;
+      color: rgba(210, 228, 255, 0.9);
+      line-height: 1.3;
+      margin-bottom: 10px;
+    }
+
+    .v-card-body {
+      font-size: 0.75rem;
+      color: rgba(140, 175, 255, 0.38);
+      line-height: 1.72;
+      font-weight: 300;
+    }
+
+    .v-card-line {
+      display: block;
+      width: 28px;
+      height: 1px;
+      background: rgba(140, 180, 255, 0.2);
+      margin-top: 18px;
+    }
+
+    /* ── Central video box ──────────────────────────── */
+    .val-video-wrap {
+      position: relative;
+      width: min(300px, 28vw);
+      aspect-ratio: 9 / 16;
+      border-radius: 20px;
+      overflow: hidden;
+      border: 1px solid rgba(140, 180, 255, 0.12);
+      box-shadow:
+        0 0 0 1px rgba(140, 180, 255, 0.05),
+        0 16px 80px rgba(80, 120, 255, 0.2),
+        0 0 140px rgba(80, 120, 255, 0.1);
+      flex-shrink: 0;
+    }
+
+    .val-video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    /* subtle top-edge shine on video */
+    .val-video-shine {
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 40%;
+      background: linear-gradient(to bottom,
+        rgba(140, 180, 255, 0.06) 0%, transparent 100%);
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+
+<section class="landing-section">
+<div class="outer-box" id="outerBox">
+  <canvas id="neural-canvas"></canvas>
+  <div class="atmo t-green" id="atmo"></div>
+
+  <!-- ── Bubble sets ── -->
+  <div class="bubble-set active" id="bs-0"></div>
+  <div class="bubble-set"        id="bs-1"></div>
+  <div class="bubble-set"        id="bs-2"></div>
+  <div class="bubble-set"        id="bs-3"></div>
+
+  <!-- ── Carousel inner box ── -->
+  <div class="inner-box theme-0" id="innerBox">
+    <img class="slide active" src="./assets/pat1.png" alt="Slide 1" />
+    <img class="slide"        src="./assets/pat2.png" alt="Slide 2" />
+    <img class="slide"        src="./assets/pat3.png" alt="Slide 3" />
+    <img class="slide"        src="./assets/pat4.png" alt="Slide 4" />
+    <div class="carousel-dots" id="carouselDots">
+      <span class="dot active" data-i="0"></span>
+      <span class="dot"        data-i="1"></span>
+      <span class="dot"        data-i="2"></span>
+      <span class="dot"        data-i="3"></span>
+    </div>
+  </div>
+
+  <!-- ── Headline — bottom left ── -->
+  <div class="headline-block">
+    <p class="eyebrow">Behavioral Intelligence</p>
+    <h1 class="headline">
+      <span class="l1">first meeting</span>
+      <span class="l2">can be quite</span>
+      <span class="l3"><span class="stress">stressful</span><span class="dots">...</span></span>
+    </h1>
+    <p class="sub">
+      We surface the invisible patterns shaping every interaction —
+      before the conversation even begins.
+    </p>
+    <div class="cta-row">
+      <button class="btn-primary">Map my patterns</button>
+      <span class="btn-ghost">Learn more &rarr;</span>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ════════════════════════════════════════════════════
+     SECTION 2 — CLINIC VALUE
+════════════════════════════════════════════════════ -->
+<section class="value-section" id="valueSection">
+  <canvas class="val-canvas" id="valCanvas"></canvas>
+  <!-- ambient radial glow behind video -->
+  <div class="val-glow"></div>
+
+  <div class="val-inner">
+
+    <!-- section header -->
+    <header class="val-header">
+      <p class="val-eyebrow">The Clinic Experience</p>
+      <h2 class="val-title">Designed around<br><em>you</em></h2>
+    </header>
+
+    <!-- stage: cards + video -->
+    <div class="val-stage">
+
+      <!-- left card -->
+      <article class="v-card v-card--left">
+        <div class="v-card-icon">
+          <svg viewBox="0 0 48 48" fill="none">
+            <circle cx="24" cy="14" r="6" stroke="currentColor" stroke-width="1.3" fill="none"/>
+            <path d="M12,40 Q12,26 24,24 Q36,26 36,40" stroke="currentColor" stroke-width="1.3" fill="none"/>
+            <circle cx="38" cy="22" r="4" stroke="currentColor" stroke-width="1.2" fill="none" opacity=".6"/>
+            <line x1="32" y1="18" x2="35" y2="19" stroke="currentColor" stroke-width="1" opacity=".5"/>
+            <circle cx="38" cy="22" r="1.5" fill="currentColor" opacity=".7"/>
+          </svg>
+        </div>
+        <h3 class="v-card-title">Guided with<br>expert-in-the-loop</h3>
+        <p class="v-card-body">Every AI insight is reviewed and guided by licensed clinicians — so nothing slips through without a human eye.</p>
+        <span class="v-card-line"></span>
+      </article>
+
+      <!-- central video box -->
+      <div class="val-video-wrap">
+        <video
+          class="val-video"
+          src="./assets/floating_pod.mp4"
+          autoplay muted loop playsinline
+        ></video>
+        <div class="val-video-shine"></div>
+      </div>
+
+      <!-- right cards column -->
+      <div class="v-cards-right">
+
+        <article class="v-card">
+          <div class="v-card-icon">
+            <svg viewBox="0 0 48 48" fill="none">
+              <circle cx="24" cy="24" r="18" stroke="currentColor" stroke-width="1" fill="none" opacity=".25"/>
+              <circle cx="24" cy="24" r="12" stroke="currentColor" stroke-width="1.1" fill="none" opacity=".45"/>
+              <circle cx="24" cy="24" r="6"  stroke="currentColor" stroke-width="1.3" fill="none" opacity=".7"/>
+              <circle cx="24" cy="24" r="2"  fill="currentColor"/>
+              <!-- tick marks -->
+              <line x1="24" y1="6"  x2="24" y2="10" stroke="currentColor" stroke-width="1" opacity=".4"/>
+              <line x1="24" y1="38" x2="24" y2="42" stroke="currentColor" stroke-width="1" opacity=".4"/>
+            </svg>
+          </div>
+          <h3 class="v-card-title">Priority of<br>patience</h3>
+          <p class="v-card-body">Therapy isn't a race. We build your care plan at a pace that respects your readiness, not a fixed timeline.</p>
+          <span class="v-card-line"></span>
+        </article>
+
+        <article class="v-card">
+          <div class="v-card-icon">
+            <svg viewBox="0 0 48 48" fill="none">
+              <circle cx="24" cy="18" r="6" stroke="currentColor" stroke-width="1.3" fill="none"/>
+              <!-- targeted ring -->
+              <circle cx="24" cy="18" r="12" stroke="currentColor" stroke-width="1" fill="none" opacity=".35" stroke-dasharray="3 3"/>
+              <!-- crosshair lines -->
+              <line x1="24" y1="6"  x2="24" y2="11" stroke="currentColor" stroke-width="1" opacity=".5"/>
+              <line x1="24" y1="25" x2="24" y2="30" stroke="currentColor" stroke-width="1" opacity=".5"/>
+              <line x1="12" y1="18" x2="17" y2="18" stroke="currentColor" stroke-width="1" opacity=".5"/>
+              <line x1="31" y1="18" x2="36" y2="18" stroke="currentColor" stroke-width="1" opacity=".5"/>
+              <path d="M14,44 Q14,32 24,30 Q34,32 34,44" stroke="currentColor" stroke-width="1.3" fill="none" opacity=".75"/>
+            </svg>
+          </div>
+          <h3 class="v-card-title">Personalized<br>therapy</h3>
+          <p class="v-card-body">Your history, your patterns, your goals — the entire care experience is shaped around what makes you, you.</p>
+          <span class="v-card-line"></span>
+        </article>
+
+      </div><!-- /v-cards-right -->
+    </div><!-- /val-stage -->
+  </div><!-- /val-inner -->
+</section>
+
+<script>
+/* ================================================================
+   CONFIG
+   ================================================================ */
+const SLIDE_INTERVAL = 6000;
+const COLOR_LERP     = 0.035;
+const SLIDE_COUNT    = 4;
+const ATMO_NAMES     = ['t-green','t-warm','t-purple','t-blue'];
+
+const THEMES = [
+  { r: 100, g: 200, b: 140 },   /* 0  green   */
+  { r: 220, g: 140, b: 100 },   /* 1  warm    */
+  { r: 170, g: 120, b: 220 },   /* 2  purple  */
+  { r: 100, g: 160, b: 240 },   /* 3  blue    */
+];
+
+/* ── Colour helpers ─────────────────────────────────── */
+function rgba(t, a) { return `rgba(${t.r},${t.g},${t.b},${a})`; }
+function clr(idx) { return THEMES[idx]; }
+
+/* ================================================================
+   SVGs PER SLIDE
+   ================================================================ */
+
+/* ── 0  green — men · social · work ─────────────────── */
+const SVGS_0 = [
+  `<svg viewBox="0 0 60 60" fill="none"><circle cx="30" cy="15" r="7" stroke="${rgba(clr(0),.55)}" stroke-width="1.4" fill="none"/><path d="M17,52 Q17,32 30,30 Q43,32 43,52" stroke="${rgba(clr(0),.45)}" stroke-width="1.4" fill="none"/></svg>`,
+  `<svg viewBox="0 0 60 60" fill="none"><circle cx="10" cy="22" r="5" fill="${rgba(clr(0),.5)}"/><circle cx="50" cy="22" r="5" fill="${rgba(clr(0),.5)}"/><circle cx="30" cy="46" r="6" fill="${rgba(clr(0),.7)}"/><line x1="10" y1="22" x2="50" y2="22" stroke="${rgba(clr(0),.3)}" stroke-width="1"/><line x1="10" y1="22" x2="30" y2="46" stroke="${rgba(clr(0),.3)}" stroke-width="1"/><line x1="50" y1="22" x2="30" y2="46" stroke="${rgba(clr(0),.3)}" stroke-width="1"/></svg>`,
+  `<svg viewBox="0 0 60 60" fill="none"><rect x="10" y="22" width="40" height="26" rx="4" stroke="${rgba(clr(0),.5)}" stroke-width="1.4" fill="none"/><path d="M22,22 V16 Q22,12 26,12 H34 Q38,12 38,16 V22" stroke="${rgba(clr(0),.4)}" stroke-width="1.2" fill="none"/><line x1="10" y1="34" x2="50" y2="34" stroke="${rgba(clr(0),.25)}" stroke-width="1"/></svg>`,
+  `<svg viewBox="0 0 60 60" fill="none"><circle cx="30" cy="10" r="5" fill="${rgba(clr(0),.7)}"/><circle cx="14" cy="34" r="4" fill="${rgba(clr(0),.5)}"/><circle cx="46" cy="34" r="4" fill="${rgba(clr(0),.5)}"/><circle cx="8" cy="52" r="3" fill="${rgba(clr(0),.4)}"/><circle cx="22" cy="52" r="3" fill="${rgba(clr(0),.4)}"/><circle cx="38" cy="52" r="3" fill="${rgba(clr(0),.4)}"/><circle cx="52" cy="52" r="3" fill="${rgba(clr(0),.4)}"/><line x1="30" y1="15" x2="14" y2="30" stroke="${rgba(clr(0),.35)}" stroke-width="1"/><line x1="30" y1="15" x2="46" y2="30" stroke="${rgba(clr(0),.35)}" stroke-width="1"/><line x1="14" y1="38" x2="8" y2="49" stroke="${rgba(clr(0),.25)}" stroke-width="1"/><line x1="14" y1="38" x2="22" y2="49" stroke="${rgba(clr(0),.25)}" stroke-width="1"/><line x1="46" y1="38" x2="38" y2="49" stroke="${rgba(clr(0),.25)}" stroke-width="1"/><line x1="46" y1="38" x2="52" y2="49" stroke="${rgba(clr(0),.25)}" stroke-width="1"/></svg>`,
+  `<svg viewBox="0 0 60 60" fill="none"><rect x="10" y="14" width="40" height="36" rx="3" stroke="${rgba(clr(0),.4)}" stroke-width="1.2" fill="none"/><line x1="10" y1="24" x2="50" y2="24" stroke="${rgba(clr(0),.3)}" stroke-width="1"/><line x1="23" y1="24" x2="23" y2="50" stroke="${rgba(clr(0),.18)}" stroke-width="1"/><line x1="37" y1="24" x2="37" y2="50" stroke="${rgba(clr(0),.18)}" stroke-width="1"/><line x1="10" y1="36" x2="50" y2="36" stroke="${rgba(clr(0),.18)}" stroke-width="1"/><circle cx="30" cy="30" r="2" fill="${rgba(clr(0),.65)}"/></svg>`,
+  `<svg viewBox="0 0 60 60" fill="none"><path d="M8,34 L20,24 L30,32 L40,24 L52,34" stroke="${rgba(clr(0),.5)}" stroke-width="1.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="20" cy="24" r="3" fill="${rgba(clr(0),.55)}"/><circle cx="40" cy="24" r="3" fill="${rgba(clr(0),.55)}"/><circle cx="30" cy="32" r="4" fill="${rgba(clr(0),.8)}"/></svg>`,
+];
+
+/* ── 1  warm — relationships · well-being ───────────── */
+const SVGS_1 = [
+  `<svg viewBox="0 0 60 60" fill="none"><path d="M30,50 C14,40 8,28 8,22 C8,14 14,10 21,10 C26,10 29,14 30,18 C31,14 34,10 39,10 C46,10 52,14 52,22 C52,28 46,40 30,50Z" stroke="${rgba(clr(1),.5)}" stroke-width="1.4" fill="none"/></svg>`,
+  `<svg viewBox="0 0 60 60" fill="none"><circle cx="22" cy="30" r="13" stroke="${rgba(clr(1),.4)}" stroke-width="1.2" fill="none"/><circle cx="38" cy="30" r="13" stroke="${rgba(clr(1),.4)}" stroke-width="1.2" fill="none"/><circle cx="30" cy="30" r="3.5" fill="${rgba(clr(1),.7)}"/></svg>`,
+  `<svg viewBox="0 0 60 60" fill="none"><circle cx="30" cy="16" r="7" stroke="${rgba(clr(1),.48)}" stroke-width="1.3" fill="none"/><line x1="30" y1="23" x2="30" y2="40" stroke="${rgba(clr(1),.4)}" stroke-width="1.2"/><line x1="16" y1="34" x2="44" y2="34" stroke="${rgba(clr(1),.32)}" stroke-width="1"/><line x1="12" y1="48" x2="48" y2="48" stroke="${rgba(clr(1),.3)}" stroke-width="1.4"/><line x1="30" y1="40" x2="30" y2="48" stroke="${rgba(clr(1),.35)}" stroke-width="1"/></svg>`,
+  `<svg viewBox="0 0 60 60" fill="none"><line x1="30" y1="54" x2="30" y2="18" stroke="${rgba(clr(1),.45)}" stroke-width="1.4"/><path d="M30,36 Q16,26 20,16 Q28,22 30,36" stroke="${rgba(clr(1),.4)}" stroke-width="1" fill="${rgba(clr(1),.06)}"/><path d="M30,26 Q44,16 42,8 Q34,14 30,26" stroke="${rgba(clr(1),.4)}" stroke-width="1" fill="${rgba(clr(1),.06)}"/><circle cx="30" cy="54" r="2.5" fill="${rgba(clr(1),.6)}"/></svg>`,
+  `<svg viewBox="0 0 60 60" fill="none"><path d="M4,20 Q13,14 22,20 Q31,26 40,20 Q49,14 56,20" stroke="${rgba(clr(1),.48)}" stroke-width="1.3" fill="none"/><path d="M4,32 Q13,26 22,32 Q31,38 40,32 Q49,26 56,32" stroke="${rgba(clr(1),.35)}" stroke-width="1.2" fill="none"/><path d="M4,44 Q13,38 22,44 Q31,50 40,44 Q49,38 56,44" stroke="${rgba(clr(1),.22)}" stroke-width="1.1" fill="none"/></svg>`,
+  `<svg viewBox="0 0 60 60" fill="none"><circle cx="30" cy="30" r="10" stroke="${rgba(clr(1),.52)}" stroke-width="1.4" fill="none"/><circle cx="30" cy="30" r="4" fill="${rgba(clr(1),.65)}"/><line x1="30" y1="6" x2="30" y2="14" stroke="${rgba(clr(1),.3)}" stroke-width="1"/><line x1="30" y1="46" x2="30" y2="54" stroke="${rgba(clr(1),.3)}" stroke-width="1"/><line x1="6" y1="30" x2="14" y2="30" stroke="${rgba(clr(1),.3)}" stroke-width="1"/><line x1="46" y1="30" x2="54" y2="30" stroke="${rgba(clr(1),.3)}" stroke-width="1"/><line x1="13" y1="13" x2="19" y2="19" stroke="${rgba(clr(1),.22)}" stroke-width="1"/><line x1="41" y1="41" x2="47" y2="47" stroke="${rgba(clr(1),.22)}" stroke-width="1"/><line x1="47" y1="13" x2="41" y2="19" stroke="${rgba(clr(1),.22)}" stroke-width="1"/><line x1="19" y1="41" x2="13" y2="47" stroke="${rgba(clr(1),.22)}" stroke-width="1"/></svg>`,
+];
+
+/* ── 2  purple — social · art · relationships · family  */
+const SVGS_2 = [
+  /* coffee cup – social */
+  `<svg viewBox="0 0 60 60" fill="none"><path d="M14,20 H40 L38,50 H16 Z" stroke="${rgba(clr(2),.5)}" stroke-width="1.4" fill="none"/><path d="M40,26 H46 Q50,26 50,32 Q50,38 46,38 H38" stroke="${rgba(clr(2),.38)}" stroke-width="1.2" fill="none"/><path d="M20,14 Q22,8 24,14" stroke="${rgba(clr(2),.3)}" stroke-width="1" fill="none"/><path d="M27,12 Q29,6 31,12" stroke="${rgba(clr(2),.3)}" stroke-width="1" fill="none"/><path d="M34,14 Q36,8 38,14" stroke="${rgba(clr(2),.3)}" stroke-width="1" fill="none"/></svg>`,
+  /* palette – art */
+  `<svg viewBox="0 0 60 60" fill="none"><ellipse cx="30" cy="32" rx="22" ry="18" stroke="${rgba(clr(2),.48)}" stroke-width="1.4" fill="none"/><circle cx="18" cy="28" r="3.5" fill="${rgba(clr(2),.5)}"/><circle cx="26" cy="20" r="3" fill="${rgba(clr(2),.4)}"/><circle cx="36" cy="22" r="3" fill="${rgba(clr(2),.45)}"/><circle cx="40" cy="33" r="3.5" fill="${rgba(clr(2),.55)}"/><circle cx="42" cy="42" r="5" stroke="${rgba(clr(2),.35)}" stroke-width="1" fill="none"/></svg>`,
+  /* two figures – relationships */
+  `<svg viewBox="0 0 60 60" fill="none"><circle cx="20" cy="16" r="5" stroke="${rgba(clr(2),.5)}" stroke-width="1.2" fill="none"/><circle cx="40" cy="16" r="5" stroke="${rgba(clr(2),.5)}" stroke-width="1.2" fill="none"/><path d="M12,46 Q12,28 20,26" stroke="${rgba(clr(2),.4)}" stroke-width="1.2" fill="none"/><path d="M48,46 Q48,28 40,26" stroke="${rgba(clr(2),.4)}" stroke-width="1.2" fill="none"/><path d="M20,26 Q30,22 40,26" stroke="${rgba(clr(2),.32)}" stroke-width="1" fill="none" stroke-dasharray="3 2"/><circle cx="30" cy="24" r="2.5" fill="${rgba(clr(2),.7)}"/></svg>`,
+  /* house – family */
+  `<svg viewBox="0 0 60 60" fill="none"><path d="M10,32 L30,12 L50,32" stroke="${rgba(clr(2),.5)}" stroke-width="1.4" fill="none" stroke-linejoin="round"/><rect x="16" y="32" width="28" height="18" stroke="${rgba(clr(2),.4)}" stroke-width="1.2" fill="none"/><rect x="25" y="38" width="10" height="12" stroke="${rgba(clr(2),.35)}" stroke-width="1" fill="none" rx="1"/></svg>`,
+  /* music notes */
+  `<svg viewBox="0 0 60 60" fill="none"><line x1="24" y1="14" x2="24" y2="42" stroke="${rgba(clr(2),.48)}" stroke-width="1.3"/><ellipse cx="19" cy="44" rx="6" ry="4.5" stroke="${rgba(clr(2),.48)}" stroke-width="1.2" fill="none"/><line x1="38" y1="18" x2="38" y2="46" stroke="${rgba(clr(2),.42)}" stroke-width="1.3"/><ellipse cx="33" cy="48" rx="6" ry="4.5" stroke="${rgba(clr(2),.42)}" stroke-width="1.2" fill="none"/><line x1="24" y1="14" x2="38" y2="18" stroke="${rgba(clr(2),.38)}" stroke-width="1.2"/></svg>`,
+  /* spiral – creative */
+  `<svg viewBox="0 0 60 60" fill="none"><path d="M30,30 Q38,22 38,30 Q38,42 26,42 Q12,42 12,28 Q12,12 30,12 Q48,12 48,30 Q48,50 28,52" stroke="${rgba(clr(2),.5)}" stroke-width="1.3" fill="none" stroke-linecap="round"/><circle cx="30" cy="30" r="2.5" fill="${rgba(clr(2),.85)}"/></svg>`,
+];
+
+/* ── 3  blue — work · family · career · kids · intimacy · sports */
+const SVGS_3 = [
+  /* laptop – work */
+  `<svg viewBox="0 0 60 60" fill="none"><rect x="14" y="16" width="32" height="22" rx="2" stroke="${rgba(clr(3),.5)}" stroke-width="1.4" fill="none"/><line x1="8" y1="42" x2="52" y2="42" stroke="${rgba(clr(3),.45)}" stroke-width="1.5"/><path d="M14,38 L8,42" stroke="${rgba(clr(3),.32)}" stroke-width="1"/><path d="M46,38 L52,42" stroke="${rgba(clr(3),.32)}" stroke-width="1"/><circle cx="30" cy="27" r="3" fill="${rgba(clr(3),.4)}"/></svg>`,
+  /* family group */
+  `<svg viewBox="0 0 60 60" fill="none"><circle cx="20" cy="14" r="5" stroke="${rgba(clr(3),.45)}" stroke-width="1.2" fill="none"/><circle cx="40" cy="14" r="5" stroke="${rgba(clr(3),.45)}" stroke-width="1.2" fill="none"/><path d="M12,40 Q12,24 20,22" stroke="${rgba(clr(3),.38)}" stroke-width="1.2" fill="none"/><path d="M48,40 Q48,24 40,22" stroke="${rgba(clr(3),.38)}" stroke-width="1.2" fill="none"/><circle cx="26" cy="34" r="3.5" stroke="${rgba(clr(3),.4)}" stroke-width="1" fill="none"/><circle cx="34" cy="34" r="3.5" stroke="${rgba(clr(3),.4)}" stroke-width="1" fill="none"/><line x1="20" y1="40" x2="26" y2="38" stroke="${rgba(clr(3),.28)}" stroke-width="1"/><line x1="40" y1="40" x2="34" y2="38" stroke="${rgba(clr(3),.28)}" stroke-width="1"/></svg>`,
+  /* ascending chart – career */
+  `<svg viewBox="0 0 60 60" fill="none"><rect x="8" y="38" width="10" height="14" rx="1" stroke="${rgba(clr(3),.4)}" stroke-width="1.2" fill="${rgba(clr(3),.06)}"/><rect x="22" y="28" width="10" height="24" rx="1" stroke="${rgba(clr(3),.48)}" stroke-width="1.2" fill="${rgba(clr(3),.06)}"/><rect x="36" y="16" width="10" height="36" rx="1" stroke="${rgba(clr(3),.55)}" stroke-width="1.2" fill="${rgba(clr(3),.08)}"/><path d="M12,36 L28,26 L42,14" stroke="${rgba(clr(3),.32)}" stroke-width="1" fill="none" stroke-dasharray="3 2"/><circle cx="42" cy="14" r="2.5" fill="${rgba(clr(3),.7)}"/></svg>`,
+  /* balloons – kids */
+  `<svg viewBox="0 0 60 60" fill="none"><circle cx="22" cy="20" r="10" stroke="${rgba(clr(3),.45)}" stroke-width="1.3" fill="none"/><line x1="22" y1="30" x2="24" y2="50" stroke="${rgba(clr(3),.28)}" stroke-width="1"/><circle cx="40" cy="16" r="7" stroke="${rgba(clr(3),.4)}" stroke-width="1.2" fill="none"/><line x1="40" y1="23" x2="38" y2="50" stroke="${rgba(clr(3),.25)}" stroke-width="1"/><circle cx="32" cy="44" r="4" fill="${rgba(clr(3),.5)}"/></svg>`,
+  /* two hands – intimacy */
+  `<svg viewBox="0 0 60 60" fill="none"><path d="M8,36 Q16,18 26,28 L30,30" stroke="${rgba(clr(3),.48)}" stroke-width="1.4" fill="none" stroke-linecap="round"/><path d="M52,36 Q44,18 34,28 L30,30" stroke="${rgba(clr(3),.48)}" stroke-width="1.4" fill="none" stroke-linecap="round"/><circle cx="30" cy="30" r="4" fill="${rgba(clr(3),.7)}"/></svg>`,
+  /* runner – sports */
+  `<svg viewBox="0 0 60 60" fill="none"><circle cx="34" cy="10" r="5" stroke="${rgba(clr(3),.48)}" stroke-width="1.3" fill="none"/><line x1="30" y1="18" x2="28" y2="32" stroke="${rgba(clr(3),.42)}" stroke-width="1.3"/><line x1="28" y1="32" x2="18" y2="48" stroke="${rgba(clr(3),.38)}" stroke-width="1.2"/><line x1="28" y1="32" x2="42" y2="48" stroke="${rgba(clr(3),.38)}" stroke-width="1.2"/><line x1="28" y1="24" x2="16" y2="28" stroke="${rgba(clr(3),.35)}" stroke-width="1.2"/><line x1="28" y1="24" x2="44" y2="18" stroke="${rgba(clr(3),.35)}" stroke-width="1.2"/></svg>`,
+];
+
+const ALL_SVGS = [SVGS_0, SVGS_1, SVGS_2, SVGS_3];
+
+/* ── Bubble positions per slide ─────────────────────── */
+const POSITIONS = [
+  /* 0 green  */ [{ s:90,x:4,y:4 },{ s:78,x:18,y:8 },{ s:96,x:34,y:2 },{ s:72,x:50,y:7 },{ s:86,x:6,y:24 },{ s:80,x:22,y:30 }],
+  /* 1 warm   */ [{ s:88,x:8,y:5 },{ s:82,x:24,y:3 },{ s:92,x:42,y:6 },{ s:74,x:56,y:3 },{ s:84,x:10,y:26 },{ s:78,x:28,y:28 }],
+  /* 2 purple */ [{ s:86,x:6,y:3 },{ s:74,x:20,y:10 },{ s:94,x:38,y:4 },{ s:80,x:52,y:8 },{ s:72,x:12,y:28 },{ s:88,x:26,y:24 }],
+  /* 3 blue   */ [{ s:82,x:4,y:6 },{ s:90,x:16,y:2 },{ s:76,x:32,y:8 },{ s:88,x:46,y:4 },{ s:78,x:8,y:24 },{ s:84,x:24,y:30 }],
+];
+
+/* ── Bubble colour CSS per theme ────────────────────── */
+function bubbleClrCSS(t) {
+  const c = `${t.r},${t.g},${t.b}`;
+  return `--bdr:rgba(${c},.22);--glo:rgba(${c},.08);--gli:rgba(${c},.04);--bdr-h:rgba(${c},.48);--glo-h:rgba(${c},.22)`;
+}
+
+/* ================================================================
+   INIT
+   ================================================================ */
+const outerBox = document.getElementById('outerBox');
+const canvas   = document.getElementById('neural-canvas');
+const atmo     = document.getElementById('atmo');
+const innerBox = document.getElementById('innerBox');
+const slides   = innerBox.querySelectorAll('.slide');
+const dots     = document.querySelectorAll('.carousel-dots .dot');
+const bSets    = [document.getElementById('bs-0'),document.getElementById('bs-1'),document.getElementById('bs-2'),document.getElementById('bs-3')];
+const W = window.innerWidth;
+const H = window.innerHeight;
+canvas.width  = W;
+canvas.height = H;
+const ctx = canvas.getContext('2d');
+
+let current = 0;
+let curColor = { r: THEMES[0].r, g: THEMES[0].g, b: THEMES[0].b };
+let tgtColor = { ...curColor };
+
+/* ── Build all bubble sets ─────────────────────────── */
+const allNodes = [];
+
+for (let ti = 0; ti < SLIDE_COUNT; ti++) {
+  const nodes = [];
+  const container = bSets[ti];
+  const posArr = POSITIONS[ti];
+  const svgArr = ALL_SVGS[ti];
+  const css = bubbleClrCSS(THEMES[ti]);
+
+  posArr.forEach((p, i) => {
+    const el = document.createElement('div');
+    el.className = 'bubble';
+    el.style.cssText = `width:${p.s}px;height:${p.s}px;left:${p.x}%;top:${p.y}%;--dur:${6.5+Math.random()*5.5}s;--dly:-${(Math.random()*10).toFixed(2)}s;${css}`;
+    el.innerHTML = `<div class="bubble-inner">${svgArr[i % svgArr.length]}</div>`;
+    container.appendChild(el);
+    nodes.push({ x: (p.x/100)*W + p.s/2, y: (p.y/100)*H + p.s/2 });
+  });
+  allNodes.push(nodes);
+}
+
+/* ── Ambient particles ─────────────────────────────── */
+const AMBIENT = Array.from({ length: 30 }, () => ({
+  x:  Math.random() * W,
+  y:  Math.random() * H * 0.76,
+  vx: (Math.random() - 0.5) * 0.3,
+  vy: (Math.random() - 0.5) * 0.22,
+  r:  1.4 + Math.random() * 2.2,
+}));
+
+/* ── Carousel logic ────────────────────────────────── */
+function goTo(idx) {
+  current = idx;
+  tgtColor = { r: THEMES[idx].r, g: THEMES[idx].g, b: THEMES[idx].b };
+
+  slides.forEach((s, i) => s.classList.toggle('active', i === idx));
+  dots.forEach((d, i)   => d.classList.toggle('active', i === idx));
+
+  innerBox.className = `inner-box theme-${idx}`;
+  atmo.className     = `atmo ${ATMO_NAMES[idx]}`;
+
+  bSets.forEach((s, i)  => s.classList.toggle('active', i === idx));
+}
+
+dots.forEach(d => d.addEventListener('click', () => goTo(+d.dataset.i)));
+setInterval(() => goTo((current + 1) % SLIDE_COUNT), SLIDE_INTERVAL);
+
+/* ── Canvas render loop ────────────────────────────── */
+function tick() {
+  ctx.clearRect(0, 0, W, H);
+
+  curColor.r += (tgtColor.r - curColor.r) * COLOR_LERP;
+  curColor.g += (tgtColor.g - curColor.g) * COLOR_LERP;
+  curColor.b += (tgtColor.b - curColor.b) * COLOR_LERP;
+  const cs = `${Math.round(curColor.r)},${Math.round(curColor.g)},${Math.round(curColor.b)}`;
+
+  AMBIENT.forEach(n => {
+    n.x += n.vx;  n.y += n.vy;
+    if (n.x < 0 || n.x > W) n.vx *= -1;
+    if (n.y < 0 || n.y > H * 0.8) n.vy *= -1;
+  });
+
+  const activeNodes = allNodes[current];
+  const ALL = [
+    ...AMBIENT.map(n => ({ x: n.x, y: n.y })),
+    ...activeNodes,
+  ];
+
+  const THRESH = 200;
+  for (let i = 0; i < ALL.length; i++) {
+    for (let j = i + 1; j < ALL.length; j++) {
+      const d = Math.hypot(ALL[i].x - ALL[j].x, ALL[i].y - ALL[j].y);
+      if (d > THRESH) continue;
+      const a = (1 - d / THRESH) * 0.19;
+      ctx.beginPath();
+      ctx.moveTo(ALL[i].x, ALL[i].y);
+      ctx.lineTo(ALL[j].x, ALL[j].y);
+      ctx.strokeStyle = `rgba(${cs},${a})`;
+      ctx.lineWidth = 0.85;
+      ctx.stroke();
+    }
+  }
+
+  AMBIENT.forEach(n => {
+    ctx.beginPath();
+    ctx.arc(n.x, n.y, n.r, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(${cs},0.5)`;
+    ctx.fill();
+  });
+
+  requestAnimationFrame(tick);
+}
+
+tick();
+
+/* ================================================================
+   SECTION 2 — ambient spacy canvas (no bubbles, just drifting
+   particles + faint connection web)
+   ================================================================ */
+(function initValCanvas() {
+  const vc  = document.getElementById('valCanvas');
+  const sec = document.getElementById('valueSection');
+
+  function resize() {
+    vc.width  = sec.offsetWidth;
+    vc.height = sec.offsetHeight;
+  }
+  resize();
+  new ResizeObserver(resize).observe(sec);
+
+  const vctx = vc.getContext('2d');
+
+  const VCOUNT = 55;
+  const vNodes = Array.from({ length: VCOUNT }, () => ({
+    x:  Math.random() * vc.width,
+    y:  Math.random() * vc.height,
+    vx: (Math.random() - 0.5) * 0.28,
+    vy: (Math.random() - 0.5) * 0.2,
+    r:  1.2 + Math.random() * 2,
+  }));
+
+  const VTHRESH = 160;
+  const VACCEL  = 'rgba(110,155,255,';
+
+  function vtick() {
+    vctx.clearRect(0, 0, vc.width, vc.height);
+
+    vNodes.forEach(n => {
+      n.x += n.vx;  n.y += n.vy;
+      if (n.x < 0 || n.x > vc.width)  n.vx *= -1;
+      if (n.y < 0 || n.y > vc.height) n.vy *= -1;
+    });
+
+    /* connection web */
+    for (let i = 0; i < vNodes.length; i++) {
+      for (let j = i + 1; j < vNodes.length; j++) {
+        const d = Math.hypot(vNodes[i].x - vNodes[j].x, vNodes[i].y - vNodes[j].y);
+        if (d > VTHRESH) continue;
+        vctx.beginPath();
+        vctx.moveTo(vNodes[i].x, vNodes[i].y);
+        vctx.lineTo(vNodes[j].x, vNodes[j].y);
+        vctx.strokeStyle = VACCEL + ((1 - d / VTHRESH) * 0.13) + ')';
+        vctx.lineWidth = 0.7;
+        vctx.stroke();
+      }
+    }
+
+    /* dots */
+    vNodes.forEach(n => {
+      vctx.beginPath();
+      vctx.arc(n.x, n.y, n.r, 0, Math.PI * 2);
+      vctx.fillStyle = VACCEL + '0.38)';
+      vctx.fill();
+    });
+
+    requestAnimationFrame(vtick);
+  }
+
+  vtick();
+})();
+</script>
+</body>
+</html>
