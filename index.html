@@ -4,6 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>VIT</title>
+  <!-- Priority-load the first carousel image before anything else -->
+  <link rel="preload" as="image" href="./assets/pat1.png" fetchpriority="high">
   <style>
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -278,182 +280,520 @@
     }
 
     /* ════════════════════════════════════════════════════
-       SECTION 2 — CLINIC VALUE
+       SECTION 2 — DASHBOARD (digital twins on pods)
     ════════════════════════════════════════════════════ */
-    .value-section {
+    .dashboard-section {
       position: relative;
       width: 100%;
       min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
       overflow: hidden;
-      /* dot-grid spacy background */
-      background-color: #05070f;
+      background-color: #04060e;
       background-image:
-        radial-gradient(rgba(255,255,255,0.028) 1px, transparent 1px);
-      background-size: 38px 38px;
+        radial-gradient(rgba(255,255,255,0.025) 1px, transparent 1px);
+      background-size: 42px 42px;
+      padding: 56px 0 32px;
     }
 
-    .val-canvas {
+    .dash-canvas {
       position: absolute;
       inset: 0;
       z-index: 0;
       pointer-events: none;
     }
 
-    /* warm ambient glow behind the video */
-    .val-glow {
+    /* horizon line / floor light */
+    .dash-floor {
       position: absolute;
-      inset: 0;
-      z-index: 0;
+      bottom: 0; left: 0; right: 0;
+      height: 240px;
+      background:
+        radial-gradient(ellipse 55% 100% at 50% 100%,
+          rgba(140, 180, 255, 0.05), transparent 70%),
+        linear-gradient(to bottom,
+          transparent 0%,
+          rgba(140, 180, 255, 0.025) 100%);
       pointer-events: none;
-      background: radial-gradient(ellipse 55% 55% at 50% 52%,
-        rgba(100, 145, 255, 0.055) 0%, transparent 70%);
+      z-index: 0;
+    }
+    .dash-floor::before {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(to right,
+        transparent 5%,
+        rgba(140, 180, 255, 0.18) 50%,
+        transparent 95%);
     }
 
-    .val-inner {
+    .dash-inner {
       position: relative;
       z-index: 2;
       width: 100%;
-      max-width: 1200px;
-      padding: 80px 60px;
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 0 56px;
       display: flex;
       flex-direction: column;
-      gap: 64px;
+      gap: 14px;
     }
 
-    /* ── Section header ─────────────────────────────── */
-    .val-header {
+    /* ── Header ─────────────────────────────────────── */
+    .dash-header {
       text-align: center;
     }
-
-    .val-eyebrow {
+    .dash-eyebrow {
       font-size: 0.6rem;
       letter-spacing: 0.24em;
       text-transform: uppercase;
       color: rgba(140, 180, 255, 0.45);
-      margin-bottom: 14px;
+      margin-bottom: 12px;
     }
-
-    .val-title {
+    .dash-title {
       font-family: 'Georgia', 'Times New Roman', serif;
       font-weight: 400;
-      font-size: clamp(2rem, 3.8vw, 3.2rem);
-      color: rgba(220, 235, 255, 0.88);
-      line-height: 1.18;
+      font-size: clamp(1.9rem, 3.4vw, 2.9rem);
+      color: rgba(220, 235, 255, 0.9);
+      line-height: 1.2;
     }
-    .val-title em {
+    .dash-title em {
       font-style: italic;
       color: #fff;
     }
-
-    /* ── Stage layout ───────────────────────────────── */
-    .val-stage {
-      display: grid;
-      grid-template-columns: 1fr auto 1fr;
-      align-items: center;
-      gap: 40px;
-    }
-
-    /* Left card sits in its own grid cell */
-    .v-card--left {
-      justify-self: end;
-    }
-
-    /* Right cards column */
-    .v-cards-right {
-      display: flex;
-      flex-direction: column;
-      gap: 24px;
-      justify-self: start;
-    }
-
-    /* ── Value cards ────────────────────────────────── */
-    .v-card {
-      width: 270px;
-      padding: 28px 28px 24px;
-      background: rgba(10, 14, 34, 0.58);
-      border: 1px solid rgba(140, 180, 255, 0.1);
-      border-radius: 16px;
-      backdrop-filter: blur(14px);
-      box-shadow:
-        0 0 0 1px rgba(140, 180, 255, 0.04),
-        0 8px 40px rgba(80, 120, 255, 0.08),
-        inset 0 0 20px rgba(80, 120, 255, 0.03);
-      transition: border-color 0.4s, box-shadow 0.4s;
-      color: rgba(140, 180, 255, 0.8);
-    }
-
-    .v-card:hover {
-      border-color: rgba(140, 180, 255, 0.22);
-      box-shadow:
-        0 0 0 1px rgba(140, 180, 255, 0.08),
-        0 12px 60px rgba(80, 120, 255, 0.14);
-    }
-
-    .v-card-icon {
-      width: 40px; height: 40px;
-      margin-bottom: 18px;
-    }
-    .v-card-icon svg {
-      width: 100%; height: 100%;
-    }
-
-    .v-card-title {
-      font-family: 'Georgia', serif;
-      font-weight: 400;
-      font-size: 1.05rem;
-      color: rgba(210, 228, 255, 0.9);
-      line-height: 1.3;
-      margin-bottom: 10px;
-    }
-
-    .v-card-body {
-      font-size: 0.75rem;
-      color: rgba(140, 175, 255, 0.38);
-      line-height: 1.72;
+    .dash-sub {
+      margin-top: 14px;
+      font-size: 0.78rem;
+      color: rgba(140, 180, 255, 0.4);
       font-weight: 300;
+      line-height: 1.7;
     }
 
-    .v-card-line {
-      display: block;
-      width: 28px;
-      height: 1px;
-      background: rgba(140, 180, 255, 0.2);
-      margin-top: 18px;
-    }
-
-    /* ── Central video box ──────────────────────────── */
-    .val-video-wrap {
+    /* ── Tabs ───────────────────────────────────────── */
+    .dash-tabs {
+      display: flex;
+      justify-content: center;
+      gap: 48px;
       position: relative;
-      width: min(300px, 28vw);
-      aspect-ratio: 9 / 16;
-      border-radius: 20px;
-      overflow: hidden;
-      border: 1px solid rgba(140, 180, 255, 0.12);
-      box-shadow:
-        0 0 0 1px rgba(140, 180, 255, 0.05),
-        0 16px 80px rgba(80, 120, 255, 0.2),
-        0 0 140px rgba(80, 120, 255, 0.1);
-      flex-shrink: 0;
+    }
+    .dash-tab {
+      background: none;
+      border: none;
+      padding: 12px 4px 18px;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 0.7rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: rgba(140, 180, 255, 0.32);
+      position: relative;
+      transition: color 0.6s ease;
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+    }
+    .dash-tab .tab-num {
+      font-family: 'Georgia', serif;
+      font-style: italic;
+      font-size: 0.65rem;
+      opacity: 0.55;
+    }
+    .dash-tab.is-active {
+      color: rgba(230, 240, 255, 0.95);
+    }
+    .dash-tab.is-active::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(to right,
+        transparent,
+        rgba(150, 190, 255, 0.7) 30%,
+        rgba(150, 190, 255, 0.7) 70%,
+        transparent);
     }
 
-    .val-video {
+    /* ── Twin stage ─────────────────────────────────── */
+    .twin-stage {
+      position: relative;
+      width: 100%;
+      height: 500px;
+      perspective: 1400px;
+    }
+
+    /* Each digital twin */
+    .twin {
+      position: absolute;
+      bottom: 60px;
+      left: 50%;
+      width: 220px;
+      transform: translateX(calc(-50% + var(--x, 0%))) translateY(var(--dy, 0px)) scale(var(--z, 1));
+      transform-origin: bottom center;
+      transition:
+        transform 1.6s cubic-bezier(0.45, 0.05, 0.25, 1),
+        z-index 0s linear 0.8s;
+      will-change: transform;
+    }
+
+    /* Avatar figure */
+    .twin-figure {
+      position: relative;
+      width: 100%;
+      height: 280px;
+      animation: twinBob 6s ease-in-out infinite;
+      animation-delay: var(--bob-dly, 0s);
+    }
+    .twin-figure img {
       width: 100%;
       height: 100%;
       object-fit: cover;
-      display: block;
+      object-position: center 20%;
+      border-radius: 18px 18px 36px 36px;
+      filter: saturate(1.05) contrast(1.02);
+      -webkit-mask-image: linear-gradient(to bottom,
+        black 0%, black 65%, transparent 96%);
+              mask-image: linear-gradient(to bottom,
+        black 0%, black 65%, transparent 96%);
     }
 
-    /* subtle top-edge shine on video */
-    .val-video-shine {
+    /* Color halo overlay around avatar — tints them with their priority */
+    .twin-figure::after {
+      content: '';
       position: absolute;
-      top: 0; left: 0; right: 0;
-      height: 40%;
-      background: linear-gradient(to bottom,
-        rgba(140, 180, 255, 0.06) 0%, transparent 100%);
+      inset: 0;
+      border-radius: 18px 18px 36px 36px;
+      background: linear-gradient(to top,
+        var(--pod-color, rgba(120,160,255,0.7)) 0%,
+        transparent 60%);
+      mix-blend-mode: screen;
+      opacity: 0.25;
       pointer-events: none;
+      -webkit-mask-image: linear-gradient(to bottom,
+        black 0%, black 65%, transparent 96%);
+              mask-image: linear-gradient(to bottom,
+        black 0%, black 65%, transparent 96%);
+    }
+
+    @keyframes twinBob {
+      0%, 100% { transform: translateY(0); }
+      50%      { transform: translateY(-10px); }
+    }
+
+    /* ── Floating pod under avatar ──────────────────── */
+    .twin-pod {
+      position: absolute;
+      bottom: -18px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 240px;
+      height: 100px;
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    /* Vertical light beam rising from the pod */
+    .twin-pod::before {
+      content: '';
+      position: absolute;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 120px;
+      height: 320px;
+      background: linear-gradient(to top,
+        var(--pod-color) 0%,
+        transparent 75%);
+      opacity: var(--beam-op, 0.18);
+      filter: blur(28px);
+      animation: podPulse var(--pulse-dur, 4s) ease-in-out infinite;
+    }
+
+    /* Floor glow ellipse */
+    .twin-pod::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 240px;
+      height: 80px;
+      background: radial-gradient(ellipse 50% 60% at center bottom,
+        var(--pod-color) 0%,
+        transparent 70%);
+      filter: blur(10px);
+      opacity: 0.85;
+      animation: podPulse var(--pulse-dur, 4s) ease-in-out infinite;
+    }
+
+    /* The thin elliptical pod ring (the "platform") */
+    .twin-pod-ring {
+      position: absolute;
+      bottom: 8px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 180px;
+      height: 24px;
+      border-radius: 50%;
+      border: 1.2px solid var(--pod-color);
+      opacity: 0.55;
+      box-shadow:
+        0 0 18px var(--pod-color),
+        inset 0 -4px 12px var(--pod-color);
+    }
+
+    @keyframes podPulse {
+      0%, 100% { opacity: 0.7; }
+      50%      { opacity: 1; }
+    }
+
+    /* ── Priority colors ─────────────────────────────── */
+    .twin[data-pri="urgent"] {
+      --pod-color: rgba(255, 80, 70, 0.85);
+      --beam-op: 0.22;
+      --pulse-dur: 2.4s;
+    }
+    .twin[data-pri="high"] {
+      --pod-color: rgba(255, 150, 60, 0.8);
+      --beam-op: 0.18;
+      --pulse-dur: 3.2s;
+    }
+    .twin[data-pri="medium"] {
+      --pod-color: rgba(255, 210, 100, 0.75);
+      --beam-op: 0.15;
+      --pulse-dur: 4s;
+    }
+    .twin[data-pri="stable"] {
+      --pod-color: rgba(90, 220, 150, 0.7);
+      --beam-op: 0.12;
+      --pulse-dur: 5s;
+    }
+
+    /* ── Twin name & status label ───────────────────── */
+    .twin-meta {
+      position: absolute;
+      bottom: -68px;
+      left: 50%;
+      transform: translateX(-50%);
+      text-align: center;
+      white-space: nowrap;
+    }
+    .twin-name {
+      font-family: 'Georgia', serif;
+      font-size: 0.95rem;
+      color: rgba(225, 235, 255, 0.92);
+      letter-spacing: 0.02em;
+    }
+    .twin-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 6px;
+      font-size: 0.55rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--pod-color);
+      opacity: 0.85;
+    }
+    .twin-status::before {
+      content: '';
+      display: inline-block;
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      background: var(--pod-color);
+      box-shadow: 0 0 8px var(--pod-color);
+    }
+
+    /* Make twins clickable */
+    .twin { cursor: pointer; }
+    .twin .twin-figure { transition: filter 0.5s; }
+    .twin.is-selected .twin-figure {
+      filter: saturate(1.18) contrast(1.04) brightness(1.06);
+    }
+    .twin.is-selected .twin-pod-ring {
+      opacity: 0.9;
+      box-shadow:
+        0 0 30px var(--pod-color),
+        inset 0 -5px 14px var(--pod-color);
+    }
+    .twin.is-selected .twin-name {
+      color: #fff;
+    }
+
+    /* ── Patient detail card ────────────────────────── */
+    .dash-detail {
+      --hero: 100, 150, 255;            /* default fallback (overridden by JS) */
+      position: relative;
+      z-index: 3;
+      width: 100%;
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 14px 22px 16px;
+      background: rgba(6, 10, 24, 0.72);
+      backdrop-filter: blur(24px);
+      border-radius: 16px;
+      border: 1px solid rgba(var(--hero), 0.22);
+      box-shadow:
+        0 0 0 1px rgba(var(--hero), 0.05),
+        0 10px 60px rgba(var(--hero), 0.14),
+        0 0 140px rgba(var(--hero), 0.06),
+        inset 0 0 32px rgba(var(--hero), 0.025);
+      transition:
+        border-color 0.8s ease,
+        box-shadow  0.8s ease;
+    }
+
+    /* Inner content cross-fades on patient change */
+    .dash-detail .detail-content {
+      transition: opacity 0.35s ease;
+    }
+    .dash-detail.is-swapping .detail-content { opacity: 0; }
+
+    /* Subtle top-edge accent line */
+    .dash-detail::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 18%;
+      right: 18%;
+      height: 1px;
+      background: linear-gradient(to right,
+        transparent,
+        rgba(var(--hero), 0.55) 50%,
+        transparent);
+    }
+
+    .detail-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 10px;
+      margin-bottom: 12px;
+      border-bottom: 1px solid rgba(var(--hero), 0.12);
+    }
+
+    .detail-id {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .detail-name {
+      font-family: 'Georgia', serif;
+      font-size: 1.15rem;
+      color: rgba(232, 240, 255, 0.95);
+      line-height: 1.1;
+      transition: color 0.6s;
+    }
+    .detail-sub {
+      font-size: 0.55rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: rgba(var(--hero), 0.6);
+      transition: color 0.6s;
+    }
+
+    .detail-tag {
+      font-size: 0.58rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: rgba(var(--hero), 0.85);
+      padding: 7px 14px;
+      border: 1px solid rgba(var(--hero), 0.35);
+      border-radius: 50px;
+      background: rgba(var(--hero), 0.07);
+      transition: color 0.6s, border-color 0.6s, background 0.6s;
+    }
+
+    .detail-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1.25fr;
+      gap: 0;
+    }
+
+    .detail-col {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+      padding: 0 16px;
+      min-height: 96px;
+    }
+    .detail-col:first-child { padding-left: 0; }
+    .detail-col:last-child  { padding-right: 0; }
+    .detail-col + .detail-col {
+      border-left: 1px solid rgba(var(--hero), 0.1);
+    }
+
+    .detail-label {
+      font-size: 0.52rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: rgba(var(--hero), 0.7);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: color 0.6s;
+    }
+    .detail-label .lbl-icon {
+      font-size: 0.6rem;
+      line-height: 1;
+      color: rgba(var(--hero), 0.85);
+      font-style: normal;
+      letter-spacing: 0;
+    }
+
+    .detail-body {
+      font-size: 0.78rem;
+      color: rgba(220, 235, 255, 0.72);
+      line-height: 1.65;
+      font-weight: 300;
+    }
+
+    .detail-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .detail-list li {
+      font-size: 0.74rem;
+      color: rgba(220, 235, 255, 0.7);
+      line-height: 1.5;
+      padding-left: 14px;
+      position: relative;
+      margin-bottom: 7px;
+    }
+    .detail-list li:last-child { margin-bottom: 0; }
+    .detail-list li::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 9px;
+      width: 6px;
+      height: 1px;
+      background: rgba(var(--hero), 0.65);
+      transition: background 0.6s;
+    }
+
+    .detail-quote {
+      font-family: 'Georgia', serif;
+      font-style: italic;
+      font-size: 0.85rem;
+      color: rgba(232, 240, 255, 0.88);
+      line-height: 1.5;
+      border-left: 2px solid rgba(var(--hero), 0.55);
+      padding: 2px 0 2px 12px;
+      transition: border-color 0.6s;
+    }
+
+    .detail-quote::before { content: '"'; }
+    .detail-quote::after  { content: '"'; }
+
+    .detail-time {
+      font-size: 0.58rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: rgba(var(--hero), 0.5);
+      margin-top: 8px;
+      transition: color 0.6s;
     }
   </style>
 </head>
@@ -472,7 +812,7 @@
 
   <!-- ── Carousel inner box ── -->
   <div class="inner-box theme-0" id="innerBox">
-    <img class="slide active" src="./assets/pat1.png" alt="Slide 1" />
+    <img class="slide active" src="./assets/pat1.png" alt="Slide 1" loading="eager" fetchpriority="high" decoding="sync" />
     <img class="slide"        src="./assets/pat2.png" alt="Slide 2" />
     <img class="slide"        src="./assets/pat3.png" alt="Slide 3" />
     <img class="slide"        src="./assets/pat4.png" alt="Slide 4" />
@@ -505,92 +845,118 @@
 </section>
 
 <!-- ════════════════════════════════════════════════════
-     SECTION 2 — CLINIC VALUE
+     SECTION 2 — DASHBOARD
 ════════════════════════════════════════════════════ -->
-<section class="value-section" id="valueSection">
-  <canvas class="val-canvas" id="valCanvas"></canvas>
-  <!-- ambient radial glow behind video -->
-  <div class="val-glow"></div>
+<section class="dashboard-section" id="dashboardSection">
+  <canvas class="dash-canvas" id="dashCanvas"></canvas>
+  <div class="dash-floor"></div>
 
-  <div class="val-inner">
+  <div class="dash-inner">
 
-    <!-- section header -->
-    <header class="val-header">
-      <p class="val-eyebrow">The Clinic Experience</p>
-      <h2 class="val-title">Designed around<br><em>you</em></h2>
+    <header class="dash-header">
+      <p class="dash-eyebrow">The Clinician's Dashboard</p>
+      <h2 class="dash-title">See who needs you, <em>first</em></h2>
     </header>
 
-    <!-- stage: cards + video -->
-    <div class="val-stage">
+    <div class="dash-tabs" id="dashTabs">
+      <button class="dash-tab is-active" data-view="urgent">
+        <span class="tab-num">01</span> Need attention now
+      </button>
+      <button class="dash-tab" data-view="tomorrow">
+        <span class="tab-num">02</span> Tomorrow's roster
+      </button>
+    </div>
 
-      <!-- left card -->
-      <article class="v-card v-card--left">
-        <div class="v-card-icon">
-          <svg viewBox="0 0 48 48" fill="none">
-            <circle cx="24" cy="14" r="6" stroke="currentColor" stroke-width="1.3" fill="none"/>
-            <path d="M12,40 Q12,26 24,24 Q36,26 36,40" stroke="currentColor" stroke-width="1.3" fill="none"/>
-            <circle cx="38" cy="22" r="4" stroke="currentColor" stroke-width="1.2" fill="none" opacity=".6"/>
-            <line x1="32" y1="18" x2="35" y2="19" stroke="currentColor" stroke-width="1" opacity=".5"/>
-            <circle cx="38" cy="22" r="1.5" fill="currentColor" opacity=".7"/>
-          </svg>
+    <div class="twin-stage" id="twinStage">
+
+      <!-- Twin 0 — Leo — green pod -->
+      <div class="twin" data-id="0" data-pri="urgent" style="--bob-dly:0s; --pod-color: rgba(100, 200, 140, 0.85);">
+        <div class="twin-figure">
+          <img src="./assets/pat1.png" alt="Leo R." />
         </div>
-        <h3 class="v-card-title">Guided with<br>expert-in-the-loop</h3>
-        <p class="v-card-body">Every AI insight is reviewed and guided by licensed clinicians — so nothing slips through without a human eye.</p>
-        <span class="v-card-line"></span>
-      </article>
-
-      <!-- central video box -->
-      <div class="val-video-wrap">
-        <video
-          class="val-video"
-          src="./assets/floating_pod.mp4"
-          autoplay muted loop playsinline
-        ></video>
-        <div class="val-video-shine"></div>
+        <div class="twin-pod">
+          <div class="twin-pod-ring"></div>
+        </div>
+        <div class="twin-meta">
+          <div class="twin-name">Leo R.</div>
+          <div class="twin-status">Urgent · missed 2</div>
+        </div>
       </div>
 
-      <!-- right cards column -->
-      <div class="v-cards-right">
+      <!-- Twin 1 — Alice — ginger/warm pod -->
+      <div class="twin" data-id="1" data-pri="high" style="--bob-dly:-1.5s; --pod-color: rgba(220, 140, 100, 0.85);">
+        <div class="twin-figure">
+          <img src="./assets/pat2.png" alt="Alice V." />
+        </div>
+        <div class="twin-pod">
+          <div class="twin-pod-ring"></div>
+        </div>
+        <div class="twin-meta">
+          <div class="twin-name">Alice V.</div>
+          <div class="twin-status">Anxiety spike</div>
+        </div>
+      </div>
 
-        <article class="v-card">
-          <div class="v-card-icon">
-            <svg viewBox="0 0 48 48" fill="none">
-              <circle cx="24" cy="24" r="18" stroke="currentColor" stroke-width="1" fill="none" opacity=".25"/>
-              <circle cx="24" cy="24" r="12" stroke="currentColor" stroke-width="1.1" fill="none" opacity=".45"/>
-              <circle cx="24" cy="24" r="6"  stroke="currentColor" stroke-width="1.3" fill="none" opacity=".7"/>
-              <circle cx="24" cy="24" r="2"  fill="currentColor"/>
-              <!-- tick marks -->
-              <line x1="24" y1="6"  x2="24" y2="10" stroke="currentColor" stroke-width="1" opacity=".4"/>
-              <line x1="24" y1="38" x2="24" y2="42" stroke="currentColor" stroke-width="1" opacity=".4"/>
-            </svg>
+      <!-- Twin 2 — Daniel — purple pod -->
+      <div class="twin" data-id="2" data-pri="medium" style="--bob-dly:-3s; --pod-color: rgba(170, 120, 220, 0.85);">
+        <div class="twin-figure">
+          <img src="./assets/pat3.png" alt="Daniel S." />
+        </div>
+        <div class="twin-pod">
+          <div class="twin-pod-ring"></div>
+        </div>
+        <div class="twin-meta">
+          <div class="twin-name">Daniel S.</div>
+          <div class="twin-status">Routine</div>
+        </div>
+      </div>
+
+      <!-- Twin 3 — Maya — blue pod -->
+      <div class="twin" data-id="3" data-pri="stable" style="--bob-dly:-4.5s; --pod-color: rgba(100, 160, 240, 0.85);">
+        <div class="twin-figure">
+          <img src="./assets/pat4.png" alt="Maya K." />
+        </div>
+        <div class="twin-pod">
+          <div class="twin-pod-ring"></div>
+        </div>
+        <div class="twin-meta">
+          <div class="twin-name">Maya K.</div>
+          <div class="twin-status">Stable · improving</div>
+        </div>
+      </div>
+
+    </div><!-- /twin-stage -->
+
+    <!-- ── Patient detail card (color-themed per twin) ── -->
+    <div class="dash-detail" id="dashDetail" style="--hero: 100, 200, 140;">
+      <div class="detail-content">
+        <div class="detail-head">
+          <div class="detail-id">
+            <div class="detail-name" data-field="name">Leo R.</div>
+            <div class="detail-sub"  data-field="sub">28 · session #14</div>
           </div>
-          <h3 class="v-card-title">Priority of<br>patience</h3>
-          <p class="v-card-body">Therapy isn't a race. We build your care plan at a pace that respects your readiness, not a fixed timeline.</p>
-          <span class="v-card-line"></span>
-        </article>
+          <div class="detail-tag" data-field="tag">Cognitive Behavioral Therapy</div>
+        </div>
 
-        <article class="v-card">
-          <div class="v-card-icon">
-            <svg viewBox="0 0 48 48" fill="none">
-              <circle cx="24" cy="18" r="6" stroke="currentColor" stroke-width="1.3" fill="none"/>
-              <!-- targeted ring -->
-              <circle cx="24" cy="18" r="12" stroke="currentColor" stroke-width="1" fill="none" opacity=".35" stroke-dasharray="3 3"/>
-              <!-- crosshair lines -->
-              <line x1="24" y1="6"  x2="24" y2="11" stroke="currentColor" stroke-width="1" opacity=".5"/>
-              <line x1="24" y1="25" x2="24" y2="30" stroke="currentColor" stroke-width="1" opacity=".5"/>
-              <line x1="12" y1="18" x2="17" y2="18" stroke="currentColor" stroke-width="1" opacity=".5"/>
-              <line x1="31" y1="18" x2="36" y2="18" stroke="currentColor" stroke-width="1" opacity=".5"/>
-              <path d="M14,44 Q14,32 24,30 Q34,32 34,44" stroke="currentColor" stroke-width="1.3" fill="none" opacity=".75"/>
-            </svg>
+        <div class="detail-grid">
+          <div class="detail-col">
+            <div class="detail-label"><span class="lbl-icon">↗</span>Strategy</div>
+            <p class="detail-body" data-field="strategy"></p>
           </div>
-          <h3 class="v-card-title">Personalized<br>therapy</h3>
-          <p class="v-card-body">Your history, your patterns, your goals — the entire care experience is shaped around what makes you, you.</p>
-          <span class="v-card-line"></span>
-        </article>
+          <div class="detail-col">
+            <div class="detail-label"><span class="lbl-icon">◆</span>Highlights</div>
+            <ul class="detail-list" data-field="highlights"></ul>
+          </div>
+          <div class="detail-col">
+            <div class="detail-label"><span class="lbl-icon">◉</span>Message</div>
+            <p class="detail-quote" data-field="message"></p>
+            <p class="detail-time"  data-field="time"></p>
+          </div>
+        </div>
+      </div>
+    </div>
 
-      </div><!-- /v-cards-right -->
-    </div><!-- /val-stage -->
-  </div><!-- /val-inner -->
+  </div><!-- /dash-inner -->
 </section>
 
 <script>
@@ -801,69 +1167,218 @@ function tick() {
 tick();
 
 /* ================================================================
-   SECTION 2 — ambient spacy canvas (no bubbles, just drifting
-   particles + faint connection web)
+   SECTION 2 — DASHBOARD
+   • tab switching that re-positions twins in 3D space
+   • ambient drifting particles for the spacy floor
    ================================================================ */
-(function initValCanvas() {
-  const vc  = document.getElementById('valCanvas');
-  const sec = document.getElementById('valueSection');
+(function initDashboard() {
+
+  /* ── Layouts: each view defines where every twin sits ──
+        x = horizontal offset from center (string with unit)
+        z = scale (0.55 far → 1.0 close)
+       dy = vertical bias (negative pushes upward / into background)
+  ──────────────────────────────────────────────────────── */
+  const LAYOUTS = {
+    /* Need attention now — ordered by clinical urgency */
+    urgent: {
+      0: { x: '0px',    z: 1.0,  dy: 0   },   /* Maya  – front center */
+      1: { x: '-280px', z: 0.82, dy: -28 },   /* Daniel – mid-left   */
+      2: { x: '270px',  z: 0.82, dy: -28 },   /* Leo    – mid-right  */
+      3: { x: '0px',    z: 0.60, dy: -90 },   /* Elena  – back       */
+    },
+    /* Tomorrow's roster — ordered by appointment time */
+    tomorrow: {
+      0: { x: '-260px', z: 0.82, dy: -28 },   /* Maya  – 1 pm (mid)  */
+      1: { x: '0px',    z: 0.60, dy: -90 },   /* Daniel – 4 pm (back) */
+      2: { x: '0px',    z: 1.0,  dy: 0   },   /* Leo    – 9 am (front)*/
+      3: { x: '290px',  z: 0.82, dy: -28 },   /* Elena  – 11 am (mid) */
+    },
+  };
+
+  const stage = document.getElementById('twinStage');
+  const tabs  = document.querySelectorAll('#dashTabs .dash-tab');
+  const twins = stage.querySelectorAll('.twin');
+
+  function applyLayout(view) {
+    const layout = LAYOUTS[view];
+    twins.forEach(t => {
+      const id = t.dataset.id;
+      const p  = layout[id];
+      if (!p) return;
+      t.style.setProperty('--x',  p.x);
+      t.style.setProperty('--z',  p.z);
+      t.style.setProperty('--dy', p.dy + 'px');
+      /* keep front-row twins on top during cross-over */
+      t.style.zIndex = Math.round(p.z * 100);
+    });
+  }
+
+  function setActiveTab(view) {
+    tabs.forEach(t => t.classList.toggle('is-active', t.dataset.view === view));
+    applyLayout(view);
+  }
+
+  tabs.forEach(t => t.addEventListener('click', () => setActiveTab(t.dataset.view)));
+
+  /* Initial layout */
+  applyLayout('urgent');
+
+  /* ── Patient profiles (color matches landing hero theme) ── */
+  const PATIENTS = {
+    '0': {
+      name:  'Leo R.',
+      sub:   '28 · session #14',
+      tag:   'Cognitive Behavioral Therapy',
+      strategy:
+        'CBT + grounding. Rebuilding engagement after withdrawal.',
+      highlights: [
+        'Missed 2 consecutive sessions',
+        'Sleep disrupted past 11 days',
+        'Avoiding social commitments',
+      ],
+      message: "i don't know if i can come in tomorrow… feels like everything is just too much right now",
+      time:    'Yesterday · 11:42 PM',
+      hero:    '100, 200, 140',   /* green — pat1 */
+    },
+    '1': {
+      name:  'Alice V.',
+      sub:   '34 · session #22',
+      tag:   'Exposure & Anxiety Protocol',
+      strategy:
+        'Graded exposure + breathing. Reframing workplace triggers.',
+      highlights: [
+        '3 panic events this week',
+        'Workplace trigger spike',
+        'Returning to journaling',
+      ],
+      message: "the meeting went sideways again. my hands wouldn't stop shaking. i'm trying though.",
+      time:    'Today · 08:14 AM',
+      hero:    '220, 140, 100',   /* warm/ginger — pat2 */
+    },
+    '2': {
+      name:  'Daniel S.',
+      sub:   '26 · session #9',
+      tag:   'Narrative & Creative Practice',
+      strategy:
+        'Narrative + creative practice. Maintenance phase.',
+      highlights: [
+        'Steady mood baseline',
+        'Art practice resumed',
+        'Group attendance: 4 of 4',
+      ],
+      message: "show next week is going up. nervous in a good way. think i'm ready for it",
+      time:    '2 days ago',
+      hero:    '170, 120, 220',   /* purple — pat3 */
+    },
+    '3': {
+      name:  'Maya K.',
+      sub:   '41 · session #31',
+      tag:   'Solution-Focused Therapy',
+      strategy:
+        'Solution-focused. Transitioning to self-directed monthly cadence.',
+      highlights: [
+        'Stable 6 weeks running',
+        'Hit personal running goal',
+        'Promotion conversation in motion',
+      ],
+      message: "honestly? best month i've had in two years. thank you.",
+      time:    '3 days ago',
+      hero:    '100, 160, 240',   /* blue — pat4 */
+    },
+  };
+
+  const detail = document.getElementById('dashDetail');
+  const f = sel => detail.querySelector(`[data-field="${sel}"]`);
+  let activeId = null;
+
+  function showDetail(id) {
+    const p = PATIENTS[id];
+    if (!p || id === activeId) return;
+
+    const apply = () => {
+      detail.style.setProperty('--hero', p.hero);
+      f('name').textContent     = p.name;
+      f('sub').textContent      = p.sub;
+      f('tag').textContent      = p.tag;
+      f('strategy').textContent = p.strategy;
+      f('message').textContent  = p.message;
+      f('time').textContent     = p.time;
+      f('highlights').innerHTML = p.highlights.map(h => `<li>${h}</li>`).join('');
+
+      twins.forEach(t => t.classList.toggle('is-selected', t.dataset.id === id));
+      activeId = id;
+      detail.classList.remove('is-swapping');
+    };
+
+    /* First paint: populate instantly so the card never appears empty */
+    if (activeId === null) { apply(); return; }
+
+    /* Subsequent swaps: short fade so content doesn't pop */
+    detail.classList.add('is-swapping');
+    setTimeout(apply, 320);
+  }
+
+  /* Make each twin clickable */
+  twins.forEach(t => t.addEventListener('click', () => showDetail(t.dataset.id)));
+
+  /* Default open: Maya (the urgent one) */
+  showDetail('0');
+
+  /* ── Ambient canvas — same vibe as section 2 ────── */
+  const dc  = document.getElementById('dashCanvas');
+  const sec = document.getElementById('dashboardSection');
 
   function resize() {
-    vc.width  = sec.offsetWidth;
-    vc.height = sec.offsetHeight;
+    dc.width  = sec.offsetWidth;
+    dc.height = sec.offsetHeight;
   }
   resize();
   new ResizeObserver(resize).observe(sec);
 
-  const vctx = vc.getContext('2d');
-
-  const VCOUNT = 55;
-  const vNodes = Array.from({ length: VCOUNT }, () => ({
-    x:  Math.random() * vc.width,
-    y:  Math.random() * vc.height,
-    vx: (Math.random() - 0.5) * 0.28,
-    vy: (Math.random() - 0.5) * 0.2,
-    r:  1.2 + Math.random() * 2,
+  const dctx = dc.getContext('2d');
+  const dNodes = Array.from({ length: 60 }, () => ({
+    x:  Math.random() * dc.width,
+    y:  Math.random() * dc.height,
+    vx: (Math.random() - 0.5) * 0.26,
+    vy: (Math.random() - 0.5) * 0.18,
+    r:  1.2 + Math.random() * 1.8,
   }));
 
-  const VTHRESH = 160;
-  const VACCEL  = 'rgba(110,155,255,';
+  const DTHRESH = 150;
+  const DCOLOR  = 'rgba(120,165,255,';
 
-  function vtick() {
-    vctx.clearRect(0, 0, vc.width, vc.height);
-
-    vNodes.forEach(n => {
+  function dtick() {
+    dctx.clearRect(0, 0, dc.width, dc.height);
+    dNodes.forEach(n => {
       n.x += n.vx;  n.y += n.vy;
-      if (n.x < 0 || n.x > vc.width)  n.vx *= -1;
-      if (n.y < 0 || n.y > vc.height) n.vy *= -1;
+      if (n.x < 0 || n.x > dc.width)  n.vx *= -1;
+      if (n.y < 0 || n.y > dc.height) n.vy *= -1;
     });
 
-    /* connection web */
-    for (let i = 0; i < vNodes.length; i++) {
-      for (let j = i + 1; j < vNodes.length; j++) {
-        const d = Math.hypot(vNodes[i].x - vNodes[j].x, vNodes[i].y - vNodes[j].y);
-        if (d > VTHRESH) continue;
-        vctx.beginPath();
-        vctx.moveTo(vNodes[i].x, vNodes[i].y);
-        vctx.lineTo(vNodes[j].x, vNodes[j].y);
-        vctx.strokeStyle = VACCEL + ((1 - d / VTHRESH) * 0.13) + ')';
-        vctx.lineWidth = 0.7;
-        vctx.stroke();
+    for (let i = 0; i < dNodes.length; i++) {
+      for (let j = i + 1; j < dNodes.length; j++) {
+        const d = Math.hypot(dNodes[i].x - dNodes[j].x, dNodes[i].y - dNodes[j].y);
+        if (d > DTHRESH) continue;
+        dctx.beginPath();
+        dctx.moveTo(dNodes[i].x, dNodes[i].y);
+        dctx.lineTo(dNodes[j].x, dNodes[j].y);
+        dctx.strokeStyle = DCOLOR + ((1 - d / DTHRESH) * 0.11) + ')';
+        dctx.lineWidth = 0.65;
+        dctx.stroke();
       }
     }
 
-    /* dots */
-    vNodes.forEach(n => {
-      vctx.beginPath();
-      vctx.arc(n.x, n.y, n.r, 0, Math.PI * 2);
-      vctx.fillStyle = VACCEL + '0.38)';
-      vctx.fill();
+    dNodes.forEach(n => {
+      dctx.beginPath();
+      dctx.arc(n.x, n.y, n.r, 0, Math.PI * 2);
+      dctx.fillStyle = DCOLOR + '0.35)';
+      dctx.fill();
     });
 
-    requestAnimationFrame(vtick);
+    requestAnimationFrame(dtick);
   }
 
-  vtick();
+  dtick();
 })();
 </script>
 </body>
