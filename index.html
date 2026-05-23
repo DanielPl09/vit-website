@@ -418,14 +418,14 @@
     .twin-stage {
       position: relative;
       width: 100%;
-      height: 500px;
+      height: 420px;
       perspective: 1400px;
     }
 
     /* Each digital twin */
     .twin {
       position: absolute;
-      bottom: 60px;
+      bottom: 130px;
       left: 50%;
       width: 220px;
       transform: translateX(calc(-50% + var(--x, 0%))) translateY(var(--dy, 0px)) scale(var(--z, 1));
@@ -483,7 +483,7 @@
     /* ── Floating pod under avatar ──────────────────── */
     .twin-pod {
       position: absolute;
-      bottom: -18px;
+      bottom: -52px;
       left: 50%;
       transform: translateX(-50%);
       width: 240px;
@@ -572,11 +572,19 @@
     /* ── Twin name & status label ───────────────────── */
     .twin-meta {
       position: absolute;
-      bottom: -68px;
+      bottom: -102px;
       left: 50%;
       transform: translateX(-50%);
       text-align: center;
       white-space: nowrap;
+      transition: opacity 0.7s ease;
+    }
+
+    /* The back-row twin hides its name so it doesn't bleed
+       through the semi-transparent base of the front figure. */
+    .twin.is-back .twin-meta {
+      opacity: 0;
+      pointer-events: none;
     }
     .twin-name {
       font-family: 'Georgia', serif;
@@ -646,6 +654,9 @@
     /* Inner content cross-fades on patient change */
     .dash-detail .detail-content {
       transition: opacity 0.35s ease;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
     }
     .dash-detail.is-swapping .detail-content { opacity: 0; }
 
@@ -668,7 +679,7 @@
       justify-content: space-between;
       align-items: center;
       padding-bottom: 10px;
-      margin-bottom: 12px;
+      margin-bottom: 0;
       border-bottom: 1px solid rgba(var(--hero), 0.12);
     }
 
@@ -713,9 +724,8 @@
     .detail-col {
       display: flex;
       flex-direction: column;
-      gap: 7px;
+      gap: 8px;
       padding: 0 16px;
-      min-height: 96px;
     }
     .detail-col:first-child { padding-left: 0; }
     .detail-col:last-child  { padding-right: 0; }
@@ -776,26 +786,151 @@
     .detail-quote {
       font-family: 'Georgia', serif;
       font-style: italic;
-      font-size: 0.85rem;
-      color: rgba(232, 240, 255, 0.88);
-      line-height: 1.5;
-      border-left: 2px solid rgba(var(--hero), 0.55);
-      padding: 2px 0 2px 12px;
-      transition: border-color 0.6s;
+      font-size: 0.82rem;
+      color: rgba(var(--hero), 0.82);
+      line-height: 1.55;
+      border-left: 2px solid rgba(var(--hero), 0.45);
+      padding: 2px 0 2px 11px;
+      transition: border-color 0.6s, color 0.6s;
     }
 
     .detail-quote::before { content: '"'; }
     .detail-quote::after  { content: '"'; }
 
     .detail-time {
-      font-size: 0.58rem;
+      font-size: 0.55rem;
       letter-spacing: 0.18em;
       text-transform: uppercase;
-      color: rgba(var(--hero), 0.5);
-      margin-top: 8px;
+      color: rgba(var(--hero), 0.45);
+      margin-top: 6px;
       transition: color 0.6s;
     }
 
+    /* ── Coloured tags ──────────────────────────────── */
+    .tag-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      font-size: 0.5rem;
+      font-family: inherit;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 4px 7px;
+      border-radius: 3px;
+      white-space: nowrap;
+      line-height: 1;
+    }
+
+    /* Strategy tags — tinted with the patient's hero colour */
+    .tag-hero {
+      background: rgba(var(--hero), 0.1);
+      border: 1px solid rgba(var(--hero), 0.32);
+      color: rgba(var(--hero), 0.88);
+    }
+
+    /* Semantic signal colours */
+    .tag-alert {
+      background: rgba(255, 78, 66, 0.1);
+      border: 1px solid rgba(255, 78, 66, 0.4);
+      color: rgba(255, 110, 100, 0.92);
+    }
+    .tag-warn {
+      background: rgba(255, 182, 52, 0.1);
+      border: 1px solid rgba(255, 182, 52, 0.4);
+      color: rgba(255, 200, 75, 0.92);
+    }
+    .tag-ok {
+      background: rgba(82, 210, 125, 0.1);
+      border: 1px solid rgba(82, 210, 125, 0.38);
+      color: rgba(105, 220, 140, 0.92);
+    }
+    .tag-info {
+      background: rgba(100, 158, 240, 0.1);
+      border: 1px solid rgba(100, 158, 240, 0.38);
+      color: rgba(120, 172, 248, 0.92);
+    }
+
+    /* ── Sleep sparkline row (full width under the grid) ─ */
+    .detail-chart-row {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      padding-top: 12px;
+      border-top: 1px solid rgba(var(--hero), 0.1);
+      transition: border-color 0.6s;
+    }
+    .chart-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      min-width: 96px;
+    }
+    .chart-label {
+      font-size: 0.48rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: rgba(var(--hero), 0.5);
+      transition: color 0.6s;
+    }
+    .chart-trend {
+      font-size: 0.6rem;
+      letter-spacing: 0.04em;
+      color: rgba(var(--hero), 0.78);
+      white-space: nowrap;
+      transition: color 0.6s;
+    }
+    .chart-graph {
+      flex: 1;
+      display: flex;
+      align-items: center;
+    }
+    .chart-graph svg {
+      width: 100%;
+      max-width: 240px;
+      height: auto;
+    }
+    .chart-stat {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 1px;
+      margin-left: auto;
+    }
+    .stat-val {
+      font-family: 'Georgia', serif;
+      font-size: 1.05rem;
+      color: rgba(var(--hero), 0.9);
+      line-height: 1;
+      transition: color 0.6s;
+    }
+    .stat-lbl {
+      font-size: 0.45rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: rgba(var(--hero), 0.45);
+      transition: color 0.6s;
+    }
+
+    /* ── Flame V placements ─────────────────────────── */
+    .vitlogo {
+      position: fixed;
+      top: 16px;
+      left: 18px;
+      z-index: 200;
+    }
+    #logoCanvas {
+      display: block;
+      width: 42px;
+      height: 42px;
+      border-radius: 10px;
+      box-shadow: 0 0 0 1px rgba(255,255,255,0.06), 0 4px 20px rgba(0,0,0,0.45);
+    }
     /* ════════════════════════════════════════════════════
        MOBILE RESPONSIVE  (≤ 768px)
     ════════════════════════════════════════════════════ */
@@ -968,10 +1103,31 @@
       }
       .detail-col:first-child { padding-top: 0; }
       .detail-col:last-child  { padding-bottom: 0; }
+
+      /* Chart row wraps on small screens */
+      .detail-chart-row {
+        flex-wrap: wrap;
+        gap: 10px 14px;
+      }
+      .chart-meta { min-width: auto; }
+      .chart-graph {
+        order: 3;
+        flex-basis: 100%;
+        justify-content: center;
+      }
+      .chart-graph svg { max-width: 100%; }
+      .chart-stat { margin-left: auto; }
+
+      /* Flame V logo — slightly smaller on mobile */
+      .vitlogo { top: 10px; left: 10px; }
+      #logoCanvas { width: 34px; height: 34px; border-radius: 8px; }
     }
   </style>
 </head>
 <body>
+
+<!-- ── Flame V logo — fixed top-left ── -->
+<div class="vitlogo"><canvas id="logoCanvas" width="128" height="128"></canvas></div>
 
 <section class="landing-section">
 <div class="outer-box" id="outerBox">
@@ -1102,7 +1258,7 @@
     </div><!-- /twin-stage -->
 
     <!-- ── Patient detail card (color-themed per twin) ── -->
-    <div class="dash-detail" id="dashDetail" style="--hero: 100, 200, 140;">
+    <div class="dash-detail" id="dashDetail" style="--hero: 220, 140, 100;">
       <div class="detail-content">
         <div class="detail-head">
           <div class="detail-id">
@@ -1115,11 +1271,11 @@
         <div class="detail-grid">
           <div class="detail-col">
             <div class="detail-label"><span class="lbl-icon">↗</span>Strategy</div>
-            <p class="detail-body" data-field="strategy"></p>
+            <div class="tag-row" data-field="strategy-tags"></div>
           </div>
           <div class="detail-col">
-            <div class="detail-label"><span class="lbl-icon">◆</span>Highlights</div>
-            <ul class="detail-list" data-field="highlights"></ul>
+            <div class="detail-label"><span class="lbl-icon">◆</span>Signals</div>
+            <div class="tag-row" data-field="signal-tags"></div>
           </div>
           <div class="detail-col">
             <div class="detail-label"><span class="lbl-icon">◉</span>Message</div>
@@ -1127,6 +1283,8 @@
             <p class="detail-time"  data-field="time"></p>
           </div>
         </div>
+
+        <div class="detail-chart-row" data-field="chart"></div>
       </div>
     </div>
 
@@ -1275,6 +1433,10 @@ const AMBIENT = Array.from({ length: 30 }, () => ({
   r:  1.4 + Math.random() * 2.2,
 }));
 
+/* ── Logo flame handle + section tracking ───────────── */
+let logoFlame     = null;   /* set after DOM ready, below */
+let activeSection = 'landing';  /* 'landing' | 'dashboard' */
+
 /* ── Carousel logic ────────────────────────────────── */
 function goTo(idx) {
   current = idx;
@@ -1287,6 +1449,12 @@ function goTo(idx) {
   atmo.className     = `atmo ${ATMO_NAMES[idx]}`;
 
   bSets.forEach((s, i)  => s.classList.toggle('active', i === idx));
+
+  /* Drive logo flame colour from carousel when on landing */
+  if (logoFlame && activeSection === 'landing') {
+    const t = THEMES[idx];
+    logoFlame.setHero(t.r, t.g, t.b);
+  }
 }
 
 dots.forEach(d => d.addEventListener('click', () => goTo(+d.dataset.i)));
@@ -1341,6 +1509,188 @@ function tick() {
 tick();
 
 /* ================================================================
+   FLAME V ENGINE
+   Factory that powers the top-left logo canvas.
+   mode:'fixed'  → hero:[r,g,b] is the target; curHeroRGB lerps to it.
+   mode:'cycle'  → reserved / legacy (not used in current build).
+   setHero(r,g,b) transitions smoothly to a new colour.
+   ================================================================ */
+function createFlameV(canvas, displayPx, opts) {
+  canvas.width  = 128;
+  canvas.height = 128;
+  canvas.style.width  = displayPx + 'px';
+  canvas.style.height = displayPx + 'px';
+
+  const CW = 128, CH = 128;
+  const cctx = canvas.getContext('2d');
+  const mode = (opts && opts.mode) || 'cycle';
+
+  const CYCLE_PAL = [
+    { base:[255,106,0],   mid:[255,180,40],  tip:[255,230,120] },
+    { base:[0,200,80],    mid:[100,255,160], tip:[200,255,230] },
+    { base:[30,100,255],  mid:[80,180,255],  tip:[200,235,255] },
+    { base:[180,0,230],   mid:[240,60,255],  tip:[255,200,255] },
+  ];
+
+  let heroRGB    = (opts && opts.hero) ? opts.hero.slice() : [100,200,140];
+  let curHeroRGB = heroRGB.slice();   /* smoothed value — lerps toward heroRGB each frame */
+  let palIdx = 0, nextPalIdx = 1, palFade = 0, palTimer = 0;
+  const PAL_HOLD = 280, PAL_FADE = 60;
+
+  function flerpC(a, b, t) {
+    return [a[0]+(b[0]-a[0])*t, a[1]+(b[1]-a[1])*t, a[2]+(b[2]-a[2])*t];
+  }
+  function frgba(c, a) {
+    return 'rgba('+((c[0])|0)+','+((c[1])|0)+','+((c[2])|0)+','+a+')';
+  }
+  function heroToPal(rgb) {
+    return {
+      base: [rgb[0]*0.9, rgb[1]*0.9, rgb[2]*0.9],
+      mid:  [Math.min(255,rgb[0]*1.2+50), Math.min(255,rgb[1]*1.2+50), Math.min(255,rgb[2]*1.2+50)],
+      tip:  [Math.min(255,rgb[0]*0.6+160),Math.min(255,rgb[1]*0.6+160),Math.min(255,rgb[2]*0.6+160)],
+    };
+  }
+  function getCurPal() {
+    if (mode === 'fixed') return heroToPal(curHeroRGB);
+    if (palFade <= 0) return CYCLE_PAL[palIdx];
+    const t = palFade / PAL_FADE;
+    const A = CYCLE_PAL[palIdx], B = CYCLE_PAL[nextPalIdx];
+    return { base:flerpC(B.base,A.base,t), mid:flerpC(B.mid,A.mid,t), tip:flerpC(B.tip,A.tip,t) };
+  }
+
+  /* ── Roman V path (128×128 coordinate space) ──── */
+  const VL=22, VR=106, VT=22, VB=106, VTH=22;
+  function fvPath() {
+    cctx.beginPath();
+    cctx.moveTo(VL,VT);       cctx.lineTo(VL+VTH,VT);
+    cctx.lineTo(64,VB-4);     cctx.lineTo(VR-VTH,VT);
+    cctx.lineTo(VR,VT);       cctx.lineTo(VR,VT+VTH);
+    cctx.lineTo(64,VB+4);     cctx.lineTo(VL,VT+VTH);
+    cctx.closePath();
+  }
+
+  /* ── Ash/ember particles ──────────────────────── */
+  function FParticle(col) { this.col = col; this.reset(true); }
+  FParticle.prototype.reset = function(init) {
+    this.x = 64+(Math.random()-.5)*18;
+    this.y = init ? 50+Math.random()*60 : 90+Math.random()*10;
+    this.vy = -(0.4+Math.random()*1.1); this.vx = (Math.random()-.5)*0.7;
+    this.life = 0; this.maxLife = 60+Math.random()*80;
+    this.size = 0.8+Math.random()*1.4;
+    this.flicker = Math.random()*Math.PI*2;
+  };
+  FParticle.prototype.update = function(col) {
+    this.col = col; this.life++; this.flicker += 0.18;
+    this.x += this.vx + Math.sin(this.flicker*0.7)*0.35;
+    this.y += this.vy; this.vy -= 0.008; this.vx *= 0.99;
+    if (this.life > this.maxLife) this.reset();
+  };
+  FParticle.prototype.draw = function() {
+    const t = this.life/this.maxLife;
+    const a = t < 0.15 ? t/0.15 : t > 0.7 ? 1-(t-0.7)/0.3 : 1;
+    cctx.beginPath();
+    cctx.arc(this.x, this.y, this.size*(1-t*0.5), 0, Math.PI*2);
+    cctx.fillStyle = frgba(this.col, a*0.85);
+    cctx.fill();
+  };
+
+  /* ── Volumetric flame blobs ───────────────────── */
+  function FFlame() { this.reset(true); }
+  FFlame.prototype.reset = function(init) {
+    const lane = Math.random(), cx = 38+lane*52;
+    const by = 30+lane*50+(64-cx)*0.3;
+    this.x = cx+(Math.random()-.5)*8;
+    this.y = init ? by-Math.random()*50 : by+Math.random()*4;
+    this.vy = -(0.9+Math.random()*1.8); this.vx = (Math.random()-.5)*0.5;
+    this.life = 0; this.maxLife = 28+Math.random()*38;
+    this.size = 5+Math.random()*9;
+    this.sway = Math.random()*Math.PI*2;
+    this.swaySpeed = 0.04+Math.random()*0.06;
+  };
+  FFlame.prototype.update = function() {
+    this.life++; this.sway += this.swaySpeed;
+    this.x += this.vx + Math.sin(this.sway)*0.6;
+    this.y += this.vy; this.vy *= 0.985;
+    if (this.life > this.maxLife) this.reset();
+  };
+  FFlame.prototype.draw = function(base, mid, tip) {
+    const t = this.life/this.maxLife;
+    const a = t < 0.1 ? t/0.1 : t > 0.5 ? 1-(t-0.5)/0.5 : 1;
+    const col = t < 0.4 ? flerpC(base,mid,t/0.4) : flerpC(mid,tip,(t-0.4)/0.6);
+    const r = this.size*(1-t*0.6);
+    const grd = cctx.createRadialGradient(this.x,this.y,0,this.x,this.y,r);
+    grd.addColorStop(0, frgba(col,a*0.85));
+    grd.addColorStop(1, frgba(col,0));
+    cctx.beginPath(); cctx.arc(this.x,this.y,r,0,Math.PI*2);
+    cctx.fillStyle = grd; cctx.fill();
+  };
+
+  const fflames = Array.from({length:38}, ()=>new FFlame());
+  const fashes  = Array.from({length:22}, ()=>new FParticle([255,230,120]));
+  let fframe = 0;
+
+  (function fdraw() {
+    fframe++;
+    /* Smooth hero-colour transitions in fixed mode */
+    if (mode === 'fixed') {
+      curHeroRGB[0] += (heroRGB[0]-curHeroRGB[0])*0.045;
+      curHeroRGB[1] += (heroRGB[1]-curHeroRGB[1])*0.045;
+      curHeroRGB[2] += (heroRGB[2]-curHeroRGB[2])*0.045;
+    }
+    if (mode === 'cycle') {
+      palTimer++;
+      if (palFade > 0) { palFade--; if (palFade===0) palIdx = nextPalIdx; }
+      else if (palTimer > PAL_HOLD) { palTimer=0; nextPalIdx=(palIdx+1)%CYCLE_PAL.length; palFade=PAL_FADE; }
+    }
+    const pal = getCurPal();
+    cctx.clearRect(0,0,CW,CH);
+
+    /* Icon shape clip */
+    const rr = 32;
+    cctx.save();
+    cctx.beginPath();
+    cctx.moveTo(rr,0); cctx.lineTo(CW-rr,0); cctx.quadraticCurveTo(CW,0,CW,rr);
+    cctx.lineTo(CW,CH-rr); cctx.quadraticCurveTo(CW,CH,CW-rr,CH);
+    cctx.lineTo(rr,CH); cctx.quadraticCurveTo(0,CH,0,CH-rr);
+    cctx.lineTo(0,rr); cctx.quadraticCurveTo(0,0,rr,0);
+    cctx.closePath(); cctx.clip();
+
+    cctx.fillStyle = '#0e0e0e'; cctx.fillRect(0,0,CW,CH);
+
+    /* Flames clipped inside V */
+    cctx.save(); fvPath(); cctx.clip();
+    fflames.forEach(f => { f.update(); f.draw(pal.base,pal.mid,pal.tip); });
+    fashes.forEach(p  => { p.update(pal.tip); p.draw(); });
+    cctx.restore();
+
+    /* Glow bloom along V edges */
+    cctx.save(); fvPath();
+    cctx.shadowColor = frgba(pal.base,0.9);
+    cctx.shadowBlur  = 18;
+    cctx.strokeStyle = frgba(pal.base, 0.18+0.06*Math.sin(fframe*0.04));
+    cctx.lineWidth   = 2; cctx.stroke(); cctx.restore();
+
+    /* Crisp white V outline */
+    cctx.save(); fvPath();
+    cctx.strokeStyle = 'rgba(255,255,255,0.82)';
+    cctx.lineWidth=1.5; cctx.lineJoin='miter'; cctx.stroke(); cctx.restore();
+
+    /* Ambient base glow */
+    const gg = cctx.createRadialGradient(64,102,2,64,102,32);
+    gg.addColorStop(0, frgba(pal.base, 0.28+0.08*Math.sin(fframe*0.05)));
+    gg.addColorStop(1, frgba(pal.base,0));
+    cctx.fillStyle = gg; cctx.fillRect(0,70,CW,CH-70);
+
+    cctx.restore();
+    requestAnimationFrame(fdraw);
+  })();
+
+  return {
+    setHero(r,g,b) { heroRGB = [r,g,b]; },
+  };
+}
+
+/* ================================================================
    SECTION 2 — DASHBOARD
    • tab switching that re-positions twins in 3D space
    • ambient drifting particles for the spacy floor
@@ -1384,6 +1734,9 @@ tick();
       t.style.setProperty('--dy', p.dy + 'px');
       /* keep front-row twins on top during cross-over */
       t.style.zIndex = Math.round(p.z * 100);
+      /* Flag the back-row twin so its meta name can fade out
+         and not bleed through the front figure's masked base. */
+      t.classList.toggle('is-back', p.z < 0.7);
     });
   }
 
@@ -1397,67 +1750,83 @@ tick();
   /* Initial layout */
   applyLayout('urgent');
 
-  /* ── Patient profiles (color matches landing hero theme) ── */
+  /* ── Patient profiles ──────────────────────────────────── */
   const PATIENTS = {
     '0': {
       name:  'Leo R.',
       sub:   '28 · session #14',
-      tag:   'Cognitive Behavioral Therapy',
-      strategy:
-        'CBT + grounding. Rebuilding engagement after withdrawal.',
-      highlights: [
-        'Missed 2 consecutive sessions',
-        'Sleep disrupted past 11 days',
-        'Avoiding social commitments',
+      tag:   'CBT',
+      strategyTags: [
+        { text: 'CBT',       cls: 'tag-hero' },
+        { text: 'Grounding', cls: 'tag-hero' },
+        { text: 'Reengaging',cls: 'tag-hero' },
+      ],
+      signalTags: [
+        { text: '! Miss ×2',  cls: 'tag-alert' },
+        { text: '↓ Sleep',    cls: 'tag-warn'  },
+        { text: '↓ Social',   cls: 'tag-warn'  },
       ],
       message: "i don't know if i can come in tomorrow… feels like everything is just too much right now",
       time:    'Yesterday · 11:42 PM',
-      hero:    '100, 200, 140',   /* green — pat1 */
+      hero:    '100, 200, 140',
+      sleep:   [7, 6, 5, 5, 3, 4, 4],
     },
     '1': {
       name:  'Alice V.',
       sub:   '34 · session #22',
-      tag:   'Exposure & Anxiety Protocol',
-      strategy:
-        'Graded exposure + breathing. Reframing workplace triggers.',
-      highlights: [
-        '3 panic events this week',
-        'Workplace trigger spike',
-        'Returning to journaling',
+      tag:   'Exposure',
+      strategyTags: [
+        { text: 'Exposure',  cls: 'tag-hero' },
+        { text: 'Breathing', cls: 'tag-hero' },
+        { text: 'Reframe',   cls: 'tag-hero' },
+      ],
+      signalTags: [
+        { text: '! Panic ×3',  cls: 'tag-alert' },
+        { text: '↑ Triggers',  cls: 'tag-warn'  },
+        { text: '✓ Journal',   cls: 'tag-ok'    },
       ],
       message: "the meeting went sideways again. my hands wouldn't stop shaking. i'm trying though.",
       time:    'Today · 08:14 AM',
-      hero:    '220, 140, 100',   /* warm/ginger — pat2 */
+      hero:    '220, 140, 100',
+      sleep:   [7, 6, 7, 5, 6, 5, 6],
     },
     '2': {
       name:  'Daniel S.',
       sub:   '26 · session #9',
-      tag:   'Narrative & Creative Practice',
-      strategy:
-        'Narrative + creative practice. Maintenance phase.',
-      highlights: [
-        'Steady mood baseline',
-        'Art practice resumed',
-        'Group attendance: 4 of 4',
+      tag:   'Narrative',
+      strategyTags: [
+        { text: 'Narrative',  cls: 'tag-hero' },
+        { text: 'Creative',   cls: 'tag-hero' },
+        { text: 'Maintain',   cls: 'tag-hero' },
+      ],
+      signalTags: [
+        { text: '✓ Steady',    cls: 'tag-ok'   },
+        { text: '✓ Art Active',cls: 'tag-ok'   },
+        { text: '✓ Group 4/4', cls: 'tag-ok'   },
       ],
       message: "show next week is going up. nervous in a good way. think i'm ready for it",
       time:    '2 days ago',
-      hero:    '170, 120, 220',   /* purple — pat3 */
+      hero:    '170, 120, 220',
+      sleep:   [7, 7, 8, 7, 8, 8, 7],
     },
     '3': {
       name:  'Maya K.',
       sub:   '41 · session #31',
-      tag:   'Solution-Focused Therapy',
-      strategy:
-        'Solution-focused. Transitioning to self-directed monthly cadence.',
-      highlights: [
-        'Stable 6 weeks running',
-        'Hit personal running goal',
-        'Promotion conversation in motion',
+      tag:   'Sol-Focus',
+      strategyTags: [
+        { text: 'Sol-Focus',  cls: 'tag-hero' },
+        { text: 'Monthly',    cls: 'tag-hero' },
+        { text: 'Self-Lead',  cls: 'tag-hero' },
+      ],
+      signalTags: [
+        { text: '✓ 6wk Stable', cls: 'tag-ok'   },
+        { text: '✓ Goal Met',   cls: 'tag-ok'   },
+        { text: '↑ Promotion',  cls: 'tag-info' },
       ],
       message: "honestly? best month i've had in two years. thank you.",
       time:    '3 days ago',
-      hero:    '100, 160, 240',   /* blue — pat4 */
+      hero:    '100, 160, 240',
+      sleep:   [6, 7, 7, 8, 7, 8, 9],
     },
   };
 
@@ -1465,19 +1834,70 @@ tick();
   const f = sel => detail.querySelector(`[data-field="${sel}"]`);
   let activeId = null;
 
+  /* ── Sleep sparkline ──────────────────────────── */
+  function renderSleepChart(data, heroRGB) {
+    const BW = 14, GAP = 4, H = 36, MAX = 9;
+    const innerH = H - 4;
+    const totalW = data.length * (BW + GAP) - GAP;
+    const threshY = innerH - Math.round((7 / MAX) * innerH);
+
+    let bars = '', pts = [];
+    data.forEach((v, i) => {
+      const x = i * (BW + GAP);
+      const bH = Math.max(2, Math.round((v / MAX) * innerH));
+      const y  = innerH - bH;
+      const a  = v < 5 ? 0.22 : v < 7 ? 0.42 : 0.62;
+      bars += `<rect x="${x}" y="${y}" width="${BW}" height="${bH}" rx="2" fill="rgba(${heroRGB},${a})"/>`;
+      pts.push(`${x + BW / 2},${y}`);
+    });
+    const line  = `<polyline points="${pts.join(' ')}" fill="none" stroke="rgba(${heroRGB},0.78)" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>`;
+    const tLine = `<line x1="0" y1="${threshY}" x2="${totalW}" y2="${threshY}" stroke="rgba(${heroRGB},0.18)" stroke-dasharray="3 2" stroke-width="1"/>`;
+
+    /* Compute trend + average for the side labels */
+    const avg   = data.reduce((a, b) => a + b, 0) / data.length;
+    const delta = data[data.length - 1] - data[0];
+    const trend = delta >  1 ? { icon: '↗', word: 'improving' }
+                : delta < -1 ? { icon: '↘', word: 'declining' }
+                :              { icon: '→', word: 'stable'    };
+
+    return `
+      <div class="chart-meta">
+        <div class="chart-label">Sleep · 7d</div>
+        <div class="chart-trend">${trend.icon} ${trend.word}</div>
+      </div>
+      <div class="chart-graph">
+        <svg viewBox="0 0 ${totalW} ${H}" preserveAspectRatio="xMidYMid meet" style="display:block;overflow:visible">${tLine}${bars}${line}</svg>
+      </div>
+      <div class="chart-stat">
+        <span class="stat-val">${avg.toFixed(1)}h</span>
+        <span class="stat-lbl">avg</span>
+      </div>
+    `;
+  }
+
   function showDetail(id) {
     const p = PATIENTS[id];
     if (!p || id === activeId) return;
 
     const apply = () => {
       detail.style.setProperty('--hero', p.hero);
-      f('name').textContent     = p.name;
-      f('sub').textContent      = p.sub;
-      f('tag').textContent      = p.tag;
-      f('strategy').textContent = p.strategy;
-      f('message').textContent  = p.message;
-      f('time').textContent     = p.time;
-      f('highlights').innerHTML = p.highlights.map(h => `<li>${h}</li>`).join('');
+      f('name').textContent = p.name;
+      f('sub').textContent  = p.sub;
+      f('tag').textContent  = p.tag;
+      f('message').textContent = p.message;
+      f('time').textContent    = p.time;
+
+      f('strategy-tags').innerHTML = p.strategyTags
+        .map(t => `<span class="tag ${t.cls}">${t.text}</span>`).join('');
+      f('signal-tags').innerHTML   = p.signalTags
+        .map(t => `<span class="tag ${t.cls}">${t.text}</span>`).join('');
+      f('chart').innerHTML = renderSleepChart(p.sleep, p.hero);
+
+      /* Drive logo flame colour from selected patient when on dashboard */
+      if (logoFlame && activeSection === 'dashboard') {
+        const _fh = p.hero.split(',').map(Number);
+        logoFlame.setHero(_fh[0], _fh[1], _fh[2]);
+      }
 
       twins.forEach(t => t.classList.toggle('is-selected', t.dataset.id === id));
       activeId = id;
@@ -1504,8 +1924,31 @@ tick();
     }
   }));
 
-  /* Default open: Maya (the urgent one) */
-  showDetail('0');
+  /* Default open: Alice (ginger, pat 2) */
+  showDetail('1');
+
+  /* ── Section scroll tracking → logo flame switches mode ──
+     When the dashboard crosses the viewport, hand colour control
+     to the selected patient.  Scrolling back returns it to the
+     carousel.  IntersectionObserver fires cleanly without scroll jank.
+  ─────────────────────────────────────────────────────────── */
+  new IntersectionObserver(entries => {
+    const visible = entries[0].intersectionRatio >= 0.25;
+    if (visible && activeSection !== 'dashboard') {
+      activeSection = 'dashboard';
+      /* Snap logo to the currently-selected patient */
+      const p = PATIENTS[activeId];
+      if (p && logoFlame) {
+        const _fh = p.hero.split(',').map(Number);
+        logoFlame.setHero(_fh[0], _fh[1], _fh[2]);
+      }
+    } else if (!visible && activeSection !== 'landing') {
+      activeSection = 'landing';
+      /* Snap logo back to whatever carousel slide is showing */
+      const t = THEMES[current];
+      if (logoFlame) logoFlame.setHero(t.r, t.g, t.b);
+    }
+  }, { threshold: [0.25] }).observe(document.getElementById('dashboardSection'));
 
   /* ── Ambient canvas — same vibe as section 2 ────── */
   const dc  = document.getElementById('dashCanvas');
@@ -1563,6 +2006,12 @@ tick();
 
   dtick();
 })();
+
+/* ── Flame V logo — fixed mode, driven by section context ── */
+logoFlame = createFlameV(document.getElementById('logoCanvas'), 42, {
+  mode: 'fixed',
+  hero: [THEMES[0].r, THEMES[0].g, THEMES[0].b],  /* starts at carousel slide 0 */
+});
 </script>
 </body>
 </html>
