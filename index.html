@@ -7,6 +7,8 @@
   <!-- Priority-load the first carousel image before anything else -->
   <link rel="preload" as="image" href="./assets/pat1.png" fetchpriority="high">
   <style>
+    :root { --cta: 100, 200, 140; } /* initial = Leo green; updated by goTo() */
+
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
     html {
@@ -244,19 +246,19 @@
     .btn-primary {
       padding: 11px 24px;
       border-radius: 50px;
-      border: 1px solid rgba(120,200,160,.28);
-      background: rgba(80,180,120,.08);
-      color: rgba(200,230,215,.82);
+      border: 1px solid rgba(var(--cta), .28);
+      background: rgba(var(--cta), .08);
+      color: rgba(var(--cta), .82);
       font-size: 0.68rem;
       letter-spacing: 0.15em;
       text-transform: uppercase;
       cursor: pointer;
-      transition: all 0.5s;
+      transition: border-color 0.8s ease, background 0.8s ease, color 0.8s ease, box-shadow 0.5s ease;
     }
     .btn-primary:hover {
-      background: rgba(80,180,120,.18);
-      box-shadow: 0 0 22px rgba(80,180,120,.2);
-      border-color: rgba(120,200,160,.5);
+      background: rgba(var(--cta), .18);
+      box-shadow: 0 0 22px rgba(var(--cta), .2);
+      border-color: rgba(var(--cta), .5);
     }
 
     .btn-ghost {
@@ -921,7 +923,7 @@
     .vitlogo {
       position: fixed;
       top: 16px;
-      left: 18px;
+      left: 56px;
       z-index: 200;
     }
     #logoCanvas {
@@ -1075,6 +1077,7 @@
       .dash-detail {
         padding: 14px 16px 16px;
         border-radius: 14px;
+        scroll-margin-top: 58px; /* clears the fixed logo (34px + 10px top + breathing room) */
       }
 
       .detail-head {
@@ -1104,19 +1107,12 @@
       .detail-col:first-child { padding-top: 0; }
       .detail-col:last-child  { padding-bottom: 0; }
 
-      /* Chart row wraps on small screens */
-      .detail-chart-row {
-        flex-wrap: wrap;
-        gap: 10px 14px;
-      }
-      .chart-meta { min-width: auto; }
-      .chart-graph {
-        order: 3;
-        flex-basis: 100%;
-        justify-content: center;
-      }
-      .chart-graph svg { max-width: 100%; }
-      .chart-stat { margin-left: auto; }
+      /* Chart row — stays inline on mobile, just smaller */
+      .detail-chart-row { gap: 8px 10px; }
+      .chart-meta { min-width: auto; flex-shrink: 0; }
+      .chart-graph { flex: 1; min-width: 0; justify-content: flex-start; }
+      .chart-graph svg { max-width: 110px; height: auto; }
+      .chart-stat { flex-shrink: 0; margin-left: 0; }
 
       /* Flame V logo — slightly smaller on mobile */
       .vitlogo { top: 10px; left: 10px; }
@@ -1167,7 +1163,7 @@
       before the conversation even begins.
     </p>
     <div class="cta-row">
-      <button class="btn-primary">Map my patterns</button>
+      <button class="btn-primary">Contact us</button>
       <span class="btn-ghost">Learn more &rarr;</span>
     </div>
   </div>
@@ -1450,9 +1446,10 @@ function goTo(idx) {
 
   bSets.forEach((s, i)  => s.classList.toggle('active', i === idx));
 
-  /* Drive logo flame colour from carousel when on landing */
+  /* Drive logo flame + CTA button colour from carousel when on landing */
+  const t = THEMES[idx];
+  document.documentElement.style.setProperty('--cta', `${t.r}, ${t.g}, ${t.b}`);
   if (logoFlame && activeSection === 'landing') {
-    const t = THEMES[idx];
     logoFlame.setHero(t.r, t.g, t.b);
   }
 }
