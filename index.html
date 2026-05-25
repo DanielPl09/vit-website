@@ -588,6 +588,14 @@
       opacity: 0;
       pointer-events: none;
     }
+    /* On mobile the perspective offsets push side twins off-screen,
+       leaving back-center twins fully visible — so always show their names. */
+    @media (max-width: 768px) {
+      .twin.is-back .twin-meta {
+        opacity: 1;
+        pointer-events: auto;
+      }
+    }
     .twin-name {
       font-family: 'Georgia', serif;
       font-size: 0.95rem;
@@ -1118,6 +1126,319 @@
       .vitlogo { top: 10px; left: 10px; }
       #logoCanvas { width: 34px; height: 34px; border-radius: 8px; }
     }
+
+    /* ════════════════════════════════════════════════════
+       SECTION 3 — HOW IT WORKS (Bot Flow Animation)
+    ════════════════════════════════════════════════════ */
+    .flow-section {
+      position: relative;
+      width: 100%;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background: #04060e;
+      background-image: radial-gradient(rgba(255,255,255,0.025) 1px, transparent 1px);
+      background-size: 42px 42px;
+      padding: clamp(24px, 4vh, 56px) 0 clamp(12px, 2vh, 24px);
+      overflow: hidden;
+    }
+
+    .flow-inner {
+      position: relative;
+      z-index: 2;
+      flex: 1;
+      min-height: 0;
+      width: 100%;
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 0 clamp(16px, 4vw, 56px);
+      display: flex;
+      flex-direction: column;
+      gap: clamp(10px, 2vh, 28px);
+    }
+
+    .flow-header { text-align: center; }
+
+    .flow-eyebrow {
+      font-size: 0.6rem;
+      letter-spacing: 0.24em;
+      text-transform: uppercase;
+      color: rgba(140,180,255,0.45);
+      margin-bottom: 12px;
+    }
+
+    .flow-title {
+      font-family: 'Georgia','Times New Roman',serif;
+      font-weight: 400;
+      font-size: clamp(1.9rem, 3.4vw, 2.9rem);
+      color: rgba(220,235,255,0.9);
+      line-height: 1.2;
+    }
+    .flow-title em { font-style: italic; color: #fff; }
+
+    .flow-sub {
+      margin: 14px auto 0;
+      font-size: 0.78rem;
+      color: rgba(140,180,255,0.4);
+      font-weight: 300;
+      line-height: 1.7;
+      max-width: 540px;
+    }
+
+    /* Animation container — fills whatever height the header leaves */
+    .flow-anim-wrap {
+      position: relative;
+      width: 100%;
+      flex: 1;
+      min-height: 0;
+      overflow: visible;
+    }
+
+    .flow-tubes-layer {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 1;
+      overflow: visible;
+    }
+
+    .flow-particles-layer {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 2;
+      filter: drop-shadow(0 0 3px rgba(255,255,255,0.4));
+      overflow: hidden;
+    }
+
+    /* Bot container */
+    .flow-bot-container {
+      position: absolute;
+      top: clamp(20px, 6%, 52px);
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 10;
+      animation: flowBotFloat 5s ease-in-out infinite;
+    }
+    @keyframes flowBotFloat {
+      0%, 100% { transform: translateX(-50%) translateY(0); }
+      50%       { transform: translateX(-50%) translateY(-8px); }
+    }
+
+    .flow-flame-bg {
+      position: absolute;
+      top: 50%; left: 50%;
+      width: 180%; height: 180%;
+      background: conic-gradient(from 0deg, #ef4444, #a855f7, #3b82f6, #22c55e, #ef4444);
+      animation: flowFlameSpin 4s linear infinite;
+      filter: blur(20px);
+      opacity: 0.35;
+      z-index: -1;
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      transition: opacity 0.6s ease;
+    }
+    @keyframes flowFlameSpin {
+      from { transform: translate(-50%, -50%) rotate(0deg); }
+      to   { transform: translate(-50%, -50%) rotate(360deg); }
+    }
+
+    .flow-bot-sphere {
+      width: clamp(56px, 7vw, 80px); height: clamp(56px, 7vw, 80px);
+      border-radius: 50%;
+      background: #080f22;
+      border: 2px solid rgba(90,110,150,0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      box-shadow: 0 0 18px rgba(80,110,180,0.18);
+      transition: border-color 0.7s ease;
+    }
+    .flow-bot-icon {
+      width: clamp(20px, 2.5vw, 30px); height: clamp(20px, 2.5vw, 30px);
+      color: rgba(180,205,240,0.75);
+      position: relative;
+      z-index: 10;
+    }
+    .flow-bot-aura {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      border: 2px solid transparent;
+      transition: all 0.7s ease;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    /* Decision modal */
+    .flow-modal {
+      position: absolute;
+      top: 50%;
+      left: calc(100% + 20px);
+      transform: translateY(-50%) scale(0.95);
+      background: #080f22;
+      border: 1px solid rgba(90,110,150,0.3);
+      border-radius: 12px;
+      padding: 12px;
+      width: 172px;
+      box-shadow: 0 12px 48px rgba(0,0,0,0.65);
+      transition: opacity 0.28s ease, transform 0.28s ease;
+      opacity: 0;
+      pointer-events: none;
+      z-index: 50;
+    }
+    .flow-modal.visible {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateY(-50%) scale(1);
+    }
+    .flow-modal-arrow {
+      position: absolute;
+      top: 50%; left: -6px;
+      transform: translateY(-50%) rotate(45deg);
+      width: 10px; height: 10px;
+      background: #080f22;
+      border-left: 1px solid currentColor;
+      border-bottom: 1px solid currentColor;
+    }
+    .flow-modal-head {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 10px;
+      color: inherit;
+    }
+    .flow-modal-icon { width: 15px; height: 15px; flex-shrink: 0; }
+    .flow-modal-title {
+      font-size: 0.68rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      color: inherit;
+    }
+    .flow-modal-actions { display: flex; flex-direction: column; gap: 7px; }
+
+    .flow-btn-nudge {
+      position: relative;
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 6px;
+      color: white;
+      font-size: 0.65rem;
+      font-weight: 500;
+      letter-spacing: 0.05em;
+      cursor: pointer;
+      background: transparent;
+      overflow: hidden;
+      font-family: inherit;
+      transition: transform 0.15s;
+    }
+    .flow-btn-nudge:hover  { transform: scale(1.03); }
+    .flow-btn-nudge:active { transform: scale(0.97); }
+    .flow-btn-nudge span { position: relative; z-index: 1; }
+    .flow-btn-nudge-bg {
+      position: absolute;
+      inset: 0;
+      opacity: 0.85;
+    }
+
+    .flow-btn-log {
+      width: 100%;
+      padding: 6px 8px;
+      border: 1px solid rgba(130,155,200,0.22);
+      border-radius: 6px;
+      color: rgba(150,175,220,0.55);
+      font-size: 0.6rem;
+      font-weight: 500;
+      cursor: pointer;
+      background: transparent;
+      font-family: inherit;
+      transition: background 0.2s;
+    }
+    .flow-btn-log:hover { background: rgba(130,155,200,0.1); }
+
+    /* User nodes */
+    .flow-users-row {
+      position: absolute;
+      bottom: clamp(16px, 5%, 72px);
+      left: clamp(16px, 8%, 10%); right: clamp(16px, 8%, 10%);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 10;
+    }
+    .flow-user-node {
+      position: relative;
+      width: clamp(32px, 4.5vw, 48px); height: clamp(32px, 4.5vw, 48px);
+      border-radius: 50%;
+      border: 2px solid rgba(255,255,255,0.2);
+      box-shadow: 0 0 15px currentColor;
+      transition: opacity 0.5s ease, filter 0.5s ease, transform 0.5s ease;
+    }
+
+    @keyframes flowStrongPulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50%       { opacity: 0.8; transform: scale(0.95); }
+    }
+    .flow-user-node.needs-nudge {
+      animation: flowStrongPulse 1.5s infinite;
+      z-index: 20;
+    }
+
+    @keyframes flowRipple {
+      0%   { transform: scale(1);   opacity: 0.6; }
+      50%  { transform: scale(1.5); opacity: 0.1; }
+      100% { transform: scale(2);   opacity: 0; }
+    }
+    .flow-ripple {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      background-color: currentColor;
+      animation: flowRipple 1.5s ease-out forwards;
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    /* ── Mobile overrides (≤ 480px) ───────────────────── */
+    @media (max-width: 480px) {
+      .flow-section { padding: 20px 0 12px; }
+
+      .flow-bot-container { top: 16px; }
+
+      .flow-bot-sphere { width: 52px; height: 52px; }
+      .flow-bot-icon   { width: 18px; height: 18px; }
+
+      .flow-users-row {
+        bottom: 14px;
+        left: 12px; right: 12px;
+      }
+      .flow-user-node { width: 30px; height: 30px; }
+
+      /* On narrow screens show modal below the bot, not to the right */
+      .flow-modal {
+        top: calc(100% + 12px);
+        left: 50%;
+        transform: translateX(-50%) scale(0.95);
+        width: 152px;
+      }
+      .flow-modal.visible {
+        transform: translateX(-50%) scale(1);
+      }
+      .flow-modal-arrow {
+        top: -6px; left: 50%;
+        transform: translateX(-50%) rotate(135deg);
+        border-left: none; border-bottom: none;
+        border-top: 1px solid currentColor;
+        border-right: 1px solid currentColor;
+      }
+
+      .flow-sub { font-size: 0.72rem; }
+      .flow-title { font-size: 1.55rem; }
+    }
   </style>
 </head>
 <body>
@@ -1164,7 +1485,7 @@
     </p>
     <div class="cta-row">
       <button class="btn-primary">Contact us</button>
-      <span class="btn-ghost">Learn more &rarr;</span>
+      <a href="#howItWorksSection" class="btn-ghost">How it works &rarr;</a>
     </div>
   </div>
 </div>
@@ -1285,6 +1606,79 @@
     </div>
 
   </div><!-- /dash-inner -->
+</section>
+
+<!-- ════════════════════════════════════════════════════
+     SECTION 3 — HOW IT WORKS (Bot Flow)
+════════════════════════════════════════════════════ -->
+<section class="flow-section" id="howItWorksSection">
+  <div class="flow-inner">
+
+    <header class="flow-header">
+      <p class="flow-eyebrow">Intelligent Oversight</p>
+      <h2 class="flow-title">How it <em>works</em></h2>
+      <p class="flow-sub">Each client follows an approved treatment plan. The AI monitors behavioral patterns continuously — and when it detects drift, it surfaces a focused decision for the clinician to act on.</p>
+    </header>
+
+    <!-- Animation stage -->
+    <div class="flow-anim-wrap" id="flowAnimWrap">
+
+      <!-- Curved tube paths -->
+      <svg id="flowTubes" class="flow-tubes-layer"></svg>
+
+      <!-- Data-flow particles -->
+      <div id="flowParticles" class="flow-particles-layer"></div>
+
+      <!-- AI Bot -->
+      <div class="flow-bot-container" id="flowBotContainer">
+        <div id="flowFlameHalo" class="flow-flame-bg"></div>
+        <div id="flowMainBot" class="flow-bot-sphere">
+          <!-- Heart/health icon -->
+          <svg xmlns="http://www.w3.org/2000/svg" class="flow-bot-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+              d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+          </svg>
+          <div id="flowBotAura" class="flow-bot-aura"></div>
+        </div>
+
+        <!-- Decision modal -->
+        <div id="flowModal" class="flow-modal">
+          <div class="flow-modal-arrow" id="flowModalArrow"></div>
+          <div class="flow-modal-head">
+            <svg xmlns="http://www.w3.org/2000/svg" class="flow-modal-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <h3 class="flow-modal-title">Pattern Drift</h3>
+          </div>
+          <div class="flow-modal-actions">
+            <button id="flowBtnNudge" class="flow-btn-nudge">
+              <div class="flow-btn-nudge-bg" id="flowBtnBg"></div>
+              <span>Send Gentle Nudge</span>
+            </button>
+            <button id="flowBtnLog" class="flow-btn-log">Log Only</button>
+          </div>
+        </div>
+      </div><!-- /flow-bot-container -->
+
+      <!-- Client nodes (red · green · blue · purple) -->
+      <div class="flow-users-row" id="flowUsersRow">
+        <div class="flow-user-node" id="fnode-red"
+             data-color="#ef4444"
+             style="background:#ef4444;color:#ef4444;"></div>
+        <div class="flow-user-node" id="fnode-green"
+             data-color="#22c55e"
+             style="background:#22c55e;color:#22c55e;"></div>
+        <div class="flow-user-node" id="fnode-blue"
+             data-color="#3b82f6"
+             style="background:#3b82f6;color:#3b82f6;"></div>
+        <div class="flow-user-node" id="fnode-purple"
+             data-color="#a855f7"
+             style="background:#a855f7;color:#a855f7;"></div>
+      </div>
+
+    </div><!-- /flow-anim-wrap -->
+  </div><!-- /flow-inner -->
 </section>
 
 <script>
@@ -1939,7 +2333,7 @@ function createFlameV(canvas, displayPx, opts) {
         const _fh = p.hero.split(',').map(Number);
         logoFlame.setHero(_fh[0], _fh[1], _fh[2]);
       }
-    } else if (!visible && activeSection !== 'landing') {
+    } else if (!visible && activeSection === 'dashboard') {
       activeSection = 'landing';
       /* Snap logo back to whatever carousel slide is showing */
       const t = THEMES[current];
@@ -2009,6 +2403,282 @@ logoFlame = createFlameV(document.getElementById('logoCanvas'), 42, {
   mode: 'fixed',
   hero: [THEMES[0].r, THEMES[0].g, THEMES[0].b],  /* starts at carousel slide 0 */
 });
+</script>
+
+<!-- ── Section 3 Bot Flow ── -->
+<script>
+(function () {
+  'use strict';
+
+  const FDOM = {
+    bot:            document.getElementById('flowMainBot'),
+    botAura:        document.getElementById('flowBotAura'),
+    flameHalo:      document.getElementById('flowFlameHalo'),
+    users:          Array.from(document.querySelectorAll('.flow-user-node')),
+    tubes:          document.getElementById('flowTubes'),
+    particles:      document.getElementById('flowParticles'),
+    wrap:           document.getElementById('flowAnimWrap'),
+    modal:          document.getElementById('flowModal'),
+    modalArrow:     document.getElementById('flowModalArrow'),
+    btnNudge:       document.getElementById('flowBtnNudge'),
+    btnLog:         document.getElementById('flowBtnLog'),
+    btnBg:          document.getElementById('flowBtnBg'),
+  };
+
+  const STATE = {
+    botPos:    { x: 0, y: 0 },
+    userPos:   [],
+    active:    false,
+    activeId:  null,
+    intervals: [],
+  };
+
+  /* ── Position helpers ─────────────────────────── */
+  function wrapOffset() {
+    const r = FDOM.wrap.getBoundingClientRect();
+    return { left: r.left, top: r.top };
+  }
+
+  /* ── Build tubes & cache positions ───────────── */
+  function updateLayout() {
+    const wo      = wrapOffset();
+    const botRect = FDOM.bot.getBoundingClientRect();
+
+    STATE.botPos = {
+      x: botRect.left + botRect.width  / 2 - wo.left,
+      y: botRect.top  + botRect.height / 2 - wo.top,
+    };
+
+    let svg = '';
+    STATE.userPos = FDOM.users.map(node => {
+      const r     = node.getBoundingClientRect();
+      const uX    = r.left + r.width  / 2 - wo.left;
+      const uY    = r.top  + r.height / 2 - wo.top;
+      const color = node.getAttribute('data-color');
+
+      /* Bezier control points: fan out then dive down */
+      const dx   = uX - STATE.botPos.x;
+      const cp1x = STATE.botPos.x + dx * 0.7;
+      const cp1y = STATE.botPos.y + 100;
+      const cp2x = uX;
+      const cp2y = uY - 120;
+      const path = `M ${STATE.botPos.x} ${STATE.botPos.y} C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${uX} ${uY}`;
+
+      /* Three-layer tube: dark body · translucent fill · highlight */
+      svg += `
+        <path d="${path}" fill="none" stroke="rgba(8,14,34,0.96)"  stroke-width="16" stroke-linecap="round"/>
+        <path d="${path}" fill="none" stroke="rgba(255,255,255,0.03)" stroke-width="10" stroke-linecap="round"/>
+        <path d="${path}" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="1.5" stroke-linecap="round"/>
+      `;
+
+      return { x: uX, y: uY, color, element: node, id: node.id, path };
+    });
+
+    FDOM.tubes.innerHTML = svg;
+  }
+
+  /* ── Particle (bubble) spawner ────────────────── */
+  function spawnBubble(user, dir = 'up', large = false) {
+    /* suppress upward flow from the troubled node while alert is active */
+    if (!large && STATE.active && STATE.activeId === user.id && dir === 'up') return;
+
+    const el   = document.createElement('div');
+    const size = large ? 18 : Math.random() * 5 + 4;
+
+    Object.assign(el.style, {
+      position:        'absolute',
+      top:             '0',
+      left:            '0',
+      width:           `${size}px`,
+      height:          `${size}px`,
+      borderRadius:    '50%',
+      backgroundColor: user.color,
+      boxShadow:       `0 0 ${large ? 10 : 5}px ${user.color}`,
+      offsetPath:      `path('${user.path}')`,
+      offsetAnchor:    '50% 50%',
+      zIndex:          large ? '10' : '',
+    });
+
+    FDOM.particles.appendChild(el);
+
+    const dur   = large ? 1200 : Math.random() * 2000 + 2500;
+    const s0    = dir === 'up' ? '100%' : '0%';
+    const s1    = dir === 'up' ? '0%'   : '100%';
+    const near0 = dir === 'up' ? '90%'  : '10%';
+    const near1 = dir === 'up' ? '10%'  : '90%';
+
+    const anim = el.animate([
+      { offsetDistance: s0,    opacity: 0,               transform: 'scale(0.3)' },
+      { offsetDistance: near0, opacity: large ? 1 : 0.7, transform: 'scale(1)',   offset: 0.1 },
+      { offsetDistance: near1, opacity: large ? 1 : 0.7, transform: 'scale(1)',   offset: 0.9 },
+      { offsetDistance: s1,    opacity: 0,               transform: 'scale(0.3)' },
+    ], { duration: dur, easing: large ? 'cubic-bezier(0.4,0,0.2,1)' : 'ease-in-out' });
+
+    anim.onfinish = () => {
+      el.remove();
+      if (large && dir === 'down') applyFixEffect(user);
+    };
+  }
+
+  /* ── Background idle flow ─────────────────────── */
+  function startFlow() {
+    STATE.userPos.forEach(user => {
+      const id = setInterval(() => {
+        if (Math.random() > 0.7) spawnBubble(user, 'up');
+        setTimeout(() => {
+          if (Math.random() > 0.85) spawnBubble(user, 'down');
+        }, Math.random() * 2000);
+      }, 800 + Math.random() * 1000);
+      STATE.intervals.push(id);
+    });
+  }
+
+  /* ── Logo colour helper ──────────────────────── */
+  function hexToRgb(hex) {
+    return [
+      parseInt(hex.slice(1,3), 16),
+      parseInt(hex.slice(3,5), 16),
+      parseInt(hex.slice(5,7), 16),
+    ];
+  }
+  function logoSet(r, g, b) {
+    if (typeof logoFlame !== 'undefined' && logoFlame && activeSection === 'flow') {
+      logoFlame.setHero(r, g, b);
+    }
+  }
+  /* Muted blue used when flow section is idle (no active alert) */
+  const FLOW_IDLE_COLOR = [72, 118, 210];
+
+  /* ── Trigger a random pattern-drift alert ─────── */
+  function triggerAlert() {
+    if (STATE.active) return;
+    const user       = STATE.userPos[Math.floor(Math.random() * STATE.userPos.length)];
+    STATE.active     = true;
+    STATE.activeId   = user.id;
+
+    /* Bot reacts to the drifting client */
+    FDOM.flameHalo.style.opacity      = '0';
+    FDOM.bot.style.borderColor        = user.color;
+    FDOM.botAura.style.opacity        = '1';
+    FDOM.botAura.style.boxShadow      = `0 0 25px ${user.color}`;
+    FDOM.botAura.style.borderColor    = user.color;
+
+    /* Dim all other nodes */
+    STATE.userPos.forEach(u => {
+      if (u.id === user.id) {
+        u.element.classList.add('needs-nudge');
+      } else {
+        u.element.style.opacity   = '0.18';
+        u.element.style.filter    = 'grayscale(80%)';
+        u.element.style.transform = 'scale(0.82)';
+      }
+    });
+
+    /* Colour the modal to match this client */
+    FDOM.modal.style.color                  = user.color;
+    FDOM.modal.style.borderColor            = user.color;
+    FDOM.modalArrow.style.borderColor       = user.color;
+    FDOM.btnBg.style.backgroundColor        = user.color;
+
+    FDOM.modal.classList.add('visible');
+
+    /* Drive logo to this client's colour — stays until resolved */
+    const [r,g,b] = hexToRgb(user.color);
+    logoSet(r, g, b);
+  }
+
+  /* ── Clinician approves: send the nudge ───────── */
+  function resolve() {
+    FDOM.modal.classList.remove('visible');
+
+    const user = STATE.userPos.find(u => u.id === STATE.activeId);
+
+    /* Fire the large corrective bubble downward */
+    spawnBubble(user, 'down', true);
+
+    /* Restore bot idle state */
+    FDOM.bot.style.borderColor         = '';
+    FDOM.botAura.style.opacity         = '0';
+    FDOM.botAura.style.boxShadow       = 'none';
+    FDOM.botAura.style.borderColor     = 'transparent';
+    FDOM.flameHalo.style.opacity       = '0.35';
+  }
+
+  /* ── Visual feedback when nudge reaches client ── */
+  function applyFixEffect(user) {
+    const el = user.element;
+    el.classList.remove('needs-nudge');
+
+    /* Ripple */
+    const ripple = document.createElement('div');
+    ripple.className = 'flow-ripple';
+    el.appendChild(ripple);
+
+    el.style.transform = 'scale(1.1)';
+    el.style.filter    = 'brightness(1.4)';
+    setTimeout(() => { el.style.transform = ''; el.style.filter = ''; }, 300);
+
+    /* Restore all nodes and schedule next alert */
+    setTimeout(() => {
+      ripple.remove();
+      STATE.userPos.forEach(u => {
+        u.element.style.opacity   = '';
+        u.element.style.filter    = '';
+        u.element.style.transform = '';
+      });
+      STATE.active   = false;
+      STATE.activeId = null;
+
+      /* Logo returns to section-3 idle colour now that the issue is resolved */
+      logoSet(...FLOW_IDLE_COLOR);
+
+      setTimeout(triggerAlert, 4000 + Math.random() * 5000);
+    }, 1200);
+  }
+
+  /* ── Boot ─────────────────────────────────────── */
+  updateLayout();
+  startFlow();
+  setTimeout(triggerAlert, 3500);
+
+  window.addEventListener('resize', updateLayout);
+  FDOM.btnNudge.addEventListener('click', resolve);
+  FDOM.btnLog.addEventListener('click',   resolve);
+
+  /* ── Section-3 visibility → hand logo control here ── */
+  new IntersectionObserver(entries => {
+    const visible = entries[0].intersectionRatio >= 0.25;
+    if (visible && activeSection !== 'flow') {
+      activeSection = 'flow';
+      /* If an alert is already live, jump straight to that patient's colour;
+         otherwise show the neutral flow idle colour. */
+      if (STATE.active && STATE.activeId) {
+        const user = STATE.userPos.find(u => u.id === STATE.activeId);
+        if (user) {
+          const [r,g,b] = hexToRgb(user.color);
+          if (typeof logoFlame !== 'undefined' && logoFlame) logoFlame.setHero(r, g, b);
+        }
+      } else {
+        if (typeof logoFlame !== 'undefined' && logoFlame) logoFlame.setHero(...FLOW_IDLE_COLOR);
+      }
+    } else if (!visible && activeSection === 'flow') {
+      /* Leaving section 3 — restore appropriate context colour.
+         Dashboard and landing observers will take over on their own
+         threshold crossing, but we pre-set the right colour now. */
+      const dashEl = document.getElementById('dashboardSection');
+      const dashRect = dashEl ? dashEl.getBoundingClientRect() : null;
+      if (dashRect && dashRect.top < window.innerHeight * 0.75) {
+        /* Dashboard is largely visible above → we scrolled back up */
+        activeSection = 'dashboard';
+      } else {
+        activeSection = 'landing';
+        if (typeof logoFlame !== 'undefined' && logoFlame) {
+          logoFlame.setHero(THEMES[current].r, THEMES[current].g, THEMES[current].b);
+        }
+      }
+    }
+  }, { threshold: [0.25] }).observe(document.getElementById('howItWorksSection'));
+})();
 </script>
 </body>
 </html>
